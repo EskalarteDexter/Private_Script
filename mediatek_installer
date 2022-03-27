@@ -25,7 +25,8 @@ echo -e "                $GREEN 1) PREMIUM Selected$RESET";
 sleep 2s
 clear
 	
-wget -O premium https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/premium; chmod +x premium; setarch $(uname -m) -R /root/premium
+wget -O premium "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/premium" && 
+chmod +x ~/premium && sed -i -e 's/\r$//' ~/private && ./premium
 
 echo "";
 break ;;
@@ -35,7 +36,8 @@ echo -e "                $GREEN 2) VIP Selected$RESET";
 sleep 2s
 clear
 
-wget -O vip https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/vip; chmod +x vip; setarch $(uname -m) -R /root/vip
+wget -O vip "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/vip" && 
+chmod +x ~/vip && sed -i -e 's/\r$//' ~/private && ./vip
 
 break ;;
 PRIVATE,*|*,PRIVATE) 
