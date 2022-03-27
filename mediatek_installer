@@ -26,7 +26,7 @@ sleep 2s
 clear
 	
 wget -O premium "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/premium" && 
-chmod +x ~/premium && sed -i -e 's/\r$//' ~/private && ./premium
+chmod +x ~/premium && sed -i -e 's/\r$//' ~/premium && ./premium
 
 echo "";
 break ;;
@@ -37,7 +37,7 @@ sleep 2s
 clear
 
 wget -O vip "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/vip" && 
-chmod +x ~/vip && sed -i -e 's/\r$//' ~/private && ./vip
+chmod +x ~/vip && sed -i -e 's/\r$//' ~/vip && ./vip
 
 break ;;
 PRIVATE,*|*,PRIVATE) 
