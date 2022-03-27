@@ -43,7 +43,9 @@ echo "";
 echo -e "                $GREEN 3) PRIVATE Selected$RESET";
 sleep 2s
 clear
-wget -O private https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/private; chmod +x private; setarch $(uname -m) -R /root/private
+
+wget -O private "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/private" && 
+chmod +x ~/private && sed -i -e 's/\r$//' ~/private && ./private
 
 echo "";
 break ;;
