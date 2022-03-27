@@ -1,5 +1,5 @@
 #!/bin/bash
-# Auto Script for Multi OS By Mtknetwork 2021
+# Auto Script for Multi OS By Mtknetwork 2022
 RED='\033[01;31m';
 RESET='\033[0m';
 GREEN='\033[01;32m';
@@ -18,17 +18,16 @@ echo '
 PS3='Choose or Type a Plan: '
 options=("PREMIUM" "VIP" "PRIVATE" "NONE" "Quit")
 select opt in "${options[@]}"; do
-  case "$opt,$REPLY" in
-    PREMIUM,*|*,PREMIUM) 
-	echo "";
-	echo -e "                $GREEN 1) PREMUIM Selected$RESET";
-	sleep 2s
-	clear
-wget -O premium "http://script.mediatekvpn.com/DexterEskalarte/mediatek/category/premium"
-chmod +x ~/premium && sed -i -e 's/\r$//' ~/premium && ./premium
+case "$opt,$REPLY" in
+PREMIUM,*|*,PREMIUM) 
+echo "";
+echo -e "                $GREEN 1) PREMIUM Selected$RESET";
+sleep 2s
+clear
+	
+wget -O premium https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/premium; chmod +x premium; setarch $(uname -m) -R /root/premium
 
 echo "";
-
 break ;;
 VIP,*|*,VIP) 
 echo "";
@@ -36,8 +35,7 @@ echo -e "                $GREEN 2) VIP Selected$RESET";
 sleep 2s
 clear
 
-wget -O vip "http://script.mediatekvpn.com/DexterEskalarte/mediatek/category/vip"
-chmod +x ~/vip && sed -i -e 's/\r$//' ~/vip && ./vip
+wget -O vip https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/vip; chmod +x vip; setarch $(uname -m) -R /root/vip
 
 break ;;
 PRIVATE,*|*,PRIVATE) 
@@ -45,11 +43,10 @@ echo "";
 echo -e "                $GREEN 3) PRIVATE Selected$RESET";
 sleep 2s
 clear
-wget -O private "http://script.mediatekvpn.com/DexterEskalarte/mediatek/category/private"
-chmod +x ~/private && sed -i -e 's/\r$//' ~/private && ./private
+wget -O private https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/private; chmod +x private; setarch $(uname -m) -R /root/private
+
 echo "";
 break ;;
-
 NONE,*|*,NONE) 
 echo "";
 echo -e "                $GREEN 2) NONE Selected$RESET";
