@@ -71,7 +71,7 @@ SSH_Port2='225'
 
 # OpenSSH Ports
 WS_Port1='80'
-WS_Port2='442'
+WS_Port2='444'
 
 # Your SSH Banner
 SSH_Banner='http://script.psytech-vpn.com/DexterEskalarte/sshsslovpn_ws/MtkBanner'
@@ -83,7 +83,7 @@ Dropbear_Port2='555'
 # Stunnel Ports
 Stunnel_Port1='442' # through Dropbear
 Stunnel_Port2='143' # through OpenSSH
-Stunnel_Port3='144' # through OpenVPN
+Stunnel_Port3='587' # through OpenVPN
 
 #ZIPROXY
 ZIPROXY='2898'
