@@ -7,6 +7,13 @@
 # Binigay sainyo ng libre, ipamahagi nyo rin ng libre.
 #
 #
+
+#Database Details
+HOST='webhosting2041.is.cc';
+USER='trendtec_mtknetwork';
+PASS='F1005r90@';
+DBNAME='trendtec_mtknetwork';
+
 clear
 fun_bar () {
 comando[0]="$1"
@@ -113,9 +120,11 @@ MyVPS_Time='Asia/Manila'
 #############################
  apt-get update
  apt-get upgrade -y
- apt-get install lolcat -y 
- gem install lolcat
- sudo apt install python -y
+ apt-get -o Acquire::ForceIPv4=true install mysql-client -y
+ apt-get -o Acquire::ForceIPv4=true install mariadb-server stunnel4 openvpn -y
+ apt-get -o Acquire::ForceIPv4=true install dos2unix easy-rsa nano curl unzip jq virt-what net-tools -y
+ apt-get -o Acquire::ForceIPv4=true install php-cli net-tools cron php-fpm php-json php-pdo php-zip php-gd  php-mbstring php-curl php-xml php-bcmath php-json -y
+ apt-get -o Acquire::ForceIPv4=true install gnutls-bin pwgen python -y
  clear
 
 function  Instupdate() {
@@ -459,6 +468,53 @@ push "dhcp-option DNS 8.8.4.4"
 push "dhcp-option DNS 8.8.8.8"
 duplicate-cn
 myOpenVPNconf2
+
+cat <<\EOM >/etc/openvpn/login/config.sh
+#!/bin/bash
+HOST='DBHOST'
+USER='DBUSER'
+PASS='DBPASS'
+DB='DBNAME'
+EOM
+
+sed -i "s|DBHOST|$HOST|g" /etc/openvpn/login/config.sh
+sed -i "s|DBUSER|$USER|g" /etc/openvpn/login/config.sh
+sed -i "s|DBPASS|$PASS|g" /etc/openvpn/login/config.sh
+sed -i "s|DBNAME|$DBNAME|g" /etc/openvpn/login/config.sh
+
+/bin/cat <<"EOM" >/etc/openvpn/login/auth_vpn
+#!/bin/bash
+. /etc/openvpn/login/config.sh
+Query="SELECT user_name FROM users WHERE user_name='$username' AND user_encryptedPass=md5('$password') AND is_freeze='0' AND user_duration > 0"
+user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
+[ "$user_name" != '' ] && [ "$user_name" = "$username" ] && echo "user : $username" && echo 'authentication ok.' && exit 0 || echo 'authentication failed.'; exit 1
+EOM
+
+#client-connect file
+cat <<'LENZ05' >/etc/openvpn/login/connect.sh
+#!/bin/bash
+
+. /etc/openvpn/login/config.sh
+
+##set status online to user connected
+server_ip=$(curl -s https://api.ipify.org)
+datenow=`date +"%Y-%m-%d %T"`
+mysql -u $USER -p$PASS -D $DB -h $HOST -e "UPDATE users SET is_active='1', device_connected='1', active_address='$server_ip', active_date='$datenow' WHERE user_name='$common_name' "
+LENZ05
+
+#TCP client-disconnect file
+cat <<'LENZ06' >/etc/openvpn/login/disconnect.sh
+#!/bin/bash
+
+. /etc/openvpn/login/config.sh
+
+mysql -u $USER -p$PASS -D $DB -h $HOST -e "UPDATE users SET is_active='0', active_address='', active_date='' WHERE user_name='$common_name' "
+LENZ06
+
+wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
+
+echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
+
  cat <<'EOF7'> /etc/openvpn/ca.crt
 -----BEGIN CERTIFICATE-----
 MIID0jCCAzugAwIBAgIJALnVZsGmA5VVMA0GCSqGSIb3DQEBCwUAMIGeMQswCQYD
@@ -1347,20 +1403,6 @@ if __name__ == '__main__':
 
 PTHON
 }
-
-/etc/openvpn/script/authvpn.sh
-#!/bin/bash
-. /etc/openvpn/script/config.sh
-Query="SELECT user_name FROM users WHERE user_name='$username' AND auth_vpn=md5('$password') AND status='live' AND is_freeze=0 AND is_ban=0 AND (duration > 0 OR vip_duration > 0 OR private_duration > 0)"
-user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
-[ "$user_name" != '' ] && [ "$user_name" = "$username" ] && echo "user : $username" && echo 'authentication ok.' && exit 0 || echo 'authentication failed.'; exit 1
-EOM
-		
-		
-wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
-
-echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
-
 
 function service1() {
 
