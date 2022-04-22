@@ -511,10 +511,6 @@ cat <<'LENZ06' >/etc/openvpn/login/disconnect.sh
 mysql -u $USER -p$PASS -D $DB -h $HOST -e "UPDATE users SET is_active='0', active_address='', active_date='' WHERE user_name='$common_name' "
 LENZ06
 
-wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
-
-echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
-
  cat <<'EOF7'> /etc/openvpn/ca.crt
 -----BEGIN CERTIFICATE-----
 MIID0jCCAzugAwIBAgIJALnVZsGmA5VVMA0GCSqGSIb3DQEBCwUAMIGeMQswCQYD
@@ -1702,8 +1698,9 @@ if __name__ == '__main__':
 PTHON
 }
 
+wget -O /root/activate.sh "script.psytech-vpn.com/ssh/prem/activate.sh"
 
-
+echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
 
 function gatorade1() {
 
