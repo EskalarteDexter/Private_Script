@@ -88,8 +88,8 @@ Stunnel_Port3='587' # through OpenVPN
 #ZIPROXY
 ZIPROXY='2898'
 
-Proxy_Port1='8080'
-Proxy_Port2='8000'
+Proxy_Port1='8000'
+Proxy_Port2='8080'
 
 # OpenVPN Ports
 OpenVPN_Ws='8888'
@@ -99,8 +99,8 @@ OpenVPN_Port3='443'
 OpenVPN_Port4='69' # take note when you change this port, openvpn sun noload config will not work
 
 # Privoxy Ports (must be 1024 or higher)
-Privoxy_Port1='6969'
-Privoxy_Port2='9090'
+Privoxy_Port1='8085'
+Privoxy_Port2='8118'
 # OpenVPN Config Download Port
 OvpnDownload_Port='86' # Before changing this value, please read this document. It contains all unsafe ports for Google Chrome Browser, please read from line #23 to line #89: https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
 
@@ -1894,4 +1894,4 @@ systemctl restart openvpn
  echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
  echo -e ""
  rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
- rm -f premium*
+ rm -f meditek-premium.sh*
