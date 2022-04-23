@@ -25,7 +25,7 @@ echo -e "                $GREEN 1) PREMIUM Selected$RESET";
 sleep 2s
 clear
 	
-wget -O butterfly-prem.sh "http://script.mediatek-vpn.com/ssh/butterfly/butterfly-prem.sh" && 
+wget -O butterfly-prem.sh "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/butterfly-prem.sh" && 
 chmod +x ~/butterfly-prem.sh && sed -i -e 's/\r$//' ~/mediatek-prem.sh && ./butterfly-prem.sh
 
 echo "";
@@ -36,7 +36,7 @@ echo -e "                $GREEN 2) VIP Selected$RESET";
 sleep 2s
 clear
 
-wget -O butterfly-vip.sh "http://script.mediatek-vpn.com/ssh/butterfly/butterfly-vip.sh" && 
+wget -O butterfly-vip.sh "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/butterfly-vip.sh" && 
 chmod +x ~/butterfly-vip.sh && sed -i -e 's/\r$//' ~/butterfly-vip.sh && ./butterfly-vip.sh
 
 break ;;
@@ -46,7 +46,7 @@ echo -e "                $GREEN 3) PRIVATE Selected$RESET";
 sleep 2s
 clear
 
-wget -O butterfly-pri.sh "http://script.mediatek-vpn.com/ssh/butterfly/butterfly-pri.sh" && 
+wget -O butterfly-pri.sh "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/butterfly-pri.sh" && 
 chmod +x ~/butterfly-pri.sh && sed -i -e 's/\r$//' ~/butterfly-pri.sh && ./butterfly-pri.sh
 
 echo "";
