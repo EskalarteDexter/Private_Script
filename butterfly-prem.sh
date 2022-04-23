@@ -1826,5 +1826,5 @@ systemctl restart openvpn
  echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
  echo -e ""
  rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
- rm -f meditek-premium.sh*
+ rm -f butterfly-prem.sh*
  
