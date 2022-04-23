@@ -26,7 +26,7 @@ sleep 2s
 clear
 	
 wget -O butterfly-prem.sh "https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/butterfly-prem.sh" && 
-chmod +x ~/butterfly-prem.sh && sed -i -e 's/\r$//' ~/mediatek-prem.sh && ./butterfly-prem.sh
+chmod +x ~/butterfly-prem.sh && sed -i -e 's/\r$//' ~/butterfly-prem.sh && ./butterfly-prem.sh
 
 echo "";
 break ;;
