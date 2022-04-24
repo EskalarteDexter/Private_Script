@@ -114,14 +114,16 @@ MyVPS_Time='Asia/Manila'
 #############################
 #############################
  
- 
+ apt-get update
+ apt-get upgrade -y
+ apt-get install lolcat -y 
+ gem install lolcat
+ sudo apt install python -y
  clear
  
 function  Instupdate() {
  export DEBIAN_FRONTEND=noninteractive
-
- apt-get update
- apt-get upgrade -y
+ 
  apt install fail2ban -y
 
  # Removing some firewall tools that may affect other services
