@@ -109,7 +109,7 @@ if($query->num_rows > 0)
 		$data .= '/usr/sbin/useradd -p $(openssl passwd -1 '.$password.') -M '.$username.';'.PHP_EOL;
 	}
 }
-$location = '/home/mediatek/script.mediatek-vpn.com/ssh/butterfly/prem/activepremium.txt';
+$location = 'https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/prem/activepremium.txt';
 $fp = fopen($location, 'w');
 fwrite($fp, $data) or die("Unable to open file!");
 fclose($fp);
@@ -137,7 +137,7 @@ if($query2->num_rows > 0)
 		$data2 .= '/usr/sbin/userdel '.$toadd.''.PHP_EOL;
 	}
 }
-$location2 = '/home/mediatek/script.mediatek-vpn.com/ssh/butterfly/prem/notactivepremium.txt';
+$location2 = 'https://raw.githubusercontent.com/EskalarteDexter/Private_Script/main/prem/notactivepremium.txt';
 $fp = fopen($location2, 'w');
 fwrite($fp, $data2) or die("Unable to open file!");
 fclose($fp);
