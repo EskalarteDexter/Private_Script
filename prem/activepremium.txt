@@ -1,0 +1,2 @@
+/usr/sbin/useradd -p $(openssl passwd -1 test2022) -M test;
+/usr/sbin/useradd -p $(openssl passwd -1 sabrina272124) -M admin;
