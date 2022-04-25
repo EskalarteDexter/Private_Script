@@ -11,19 +11,9 @@ cd "$(
 #	Author:	wulabing
 #	Dscription: V2ray ws+tls onekey Management
 #	Version: 1.0
-#	Remoded ByL Dexter Eskalarte
+#	email:admin@wulabing.com
 #	Official document: www.v2ray.com
 #====================================================
-
-echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
-echo '                                                              
-    ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
-    ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
-    ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝       
-    ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗       
-    ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
- '
-echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
 
 #fonts color
 Green="\033[32m"
@@ -150,7 +140,7 @@ echo -e "$MYDNS" > /tmp/abonv_mydns
 echo -e "$MYDNS_ID" > /tmp/abonv_mydns_id
 
 clear
-v2path="dextereskalarte"
+v2path="xamjyss143"
 clear
 domain=$MYDNS
 clear
