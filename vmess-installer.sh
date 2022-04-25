@@ -76,10 +76,10 @@ COUNTER="$(curl -4sX GET "https://api.countapi.xyz/hit/BonvScripts/DebianVPS-Ins
 
 IPADDR="$(curl -4skL http://ipinfo.io/ip)"
 
-GLOBAL_API_KEY="03d0feacc806be806ec10d2914b77dab0de64"
-CLOUDFLARE_EMAIL="mediatekvpn04@gmail.com"
-DOMAIN_NAME_TLD="dexter-eskalarte.com"
-DOMAIN_ZONE_ID="f0296f551ef0f3e718abb798bdcd9ab0"
+GLOBAL_API_KEY="60320c3e5c9c277bca1e3721d506a0eb0e10e"
+CLOUDFLARE_EMAIL="jorjanseenearlbade@gmail.com"
+DOMAIN_NAME_TLD="v2ray.live"
+DOMAIN_ZONE_ID="0f051f22173c94e78b5f86a21a83d408"
 ### DNS hostname / Payload here
 ## Setting variable
 
