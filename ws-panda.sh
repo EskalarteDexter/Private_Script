@@ -16,7 +16,6 @@ install_require()
   clear
   echo "Installing dependencies."
   { 
-    apt install screen
     apt-get -o Acquire::ForceIPv4=true install mysql-client -y
     apt-get -o Acquire::ForceIPv4=true install mariadb-server stunnel4 openvpn -y
     apt-get -o Acquire::ForceIPv4=true install dos2unix easy-rsa nano curl unzip jq virt-what net-tools -y
