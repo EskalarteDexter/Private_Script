@@ -1,9 +1,9 @@
 #!/bin/bash
 #Database Details
 HOST='162.250.124.218';
-USER='mediatek_panda';
+USER='mediatek_pandavpn';
 PASS='F1005r90@';
-DBNAME='mediatek_panda';
+DBNAME='mediatek_pandavpn';
 rm -rf install*
 apt-get update -y
 sudo timedatectl set-timezone Asia/ Riyadh
