@@ -16,9 +16,9 @@ touch /etc/openvpn/server2.conf
 cat <<\EOM >/etc/openvpn/login/config.sh
 #!/bin/bash
 HOST='162.250.124.218'
-USER='mediatek_test'
+USER='mediatek_dexter'
 PASS='F1005r90@'
-DB='mediatek_test'
+DB='mediatek_dexter'
 
 EOM
 
@@ -31,9 +31,9 @@ username=`head -n1 $1 | tail -1`
 password=`head -n2 $1 | tail -1`
 
 HOST='162.250.124.218'
-USER='mediatek_test'
+USER='mediatek_dexter'
 PASS='F1005r90@'
-DB='mediatek_test'
+DB='mediatek_dexter'
 
 Query="SELECT user_name FROM users WHERE user_name='$username' AND user_encryptedPass=md5('$password') AND is_freeze='0' AND user_duration > 0"
 user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
