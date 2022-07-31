@@ -25,8 +25,8 @@ get_latest_ver(){
 set_password(){
     clear
     echo "\033[1;34mPlease enter password for shadowsocks-libev:\033[0m"
-    read -p "(Default password: liyanglan):" shadowsockspwd
-    [ -z "${shadowsockspwd}" ] && shadowsockspwd="liyanglan"
+    read -p "(Default password: dextereskalarte):" shadowsockspwd
+    [ -z "${shadowsockspwd}" ] && shadowsockspwd="dextereskalarte"
     echo "\033[1;35mpassword = ${shadowsockspwd}\033[0m"
 }
 
