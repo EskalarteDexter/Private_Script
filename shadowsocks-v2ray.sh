@@ -50,7 +50,9 @@ set_domain(){
 pre_install(){
     read -p "Press any key to start the installation." a
     echo "\033[1;34mStart installing. This may take a while.\033[0m"
+    apt update
     apt-get update
+    apt install libmbedtls-dev
     apt-get install -y --no-install-recommends gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libev-dev libc-ares-dev automake
 }
 
@@ -71,28 +73,6 @@ install_libsodium(){
         ldconfig
         if [ ! -f /usr/lib/libsodium.a ] && [ ! -f /usr/lib64/libsodium.a ];then
             echo "\033[1;31mFailed to install libsodium.\033[0m"
-            exit 1
-        fi
-    fi
-}
-
-
-# Installation of MbedTLS
-install_mbedtls(){
-    if [ -f /usr/lib/libmbedtls.a ];then
-        echo "\033[1;32mMbedTLS already installed, skip.\033[0m"
-    else
-        if [ ! -f mbedtls-$MBEDTLS_VER-gpl.tgz ];then
-            wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
-        fi
-        tar xf mbedtls-$MBEDTLS_VER-gpl.tgz
-        cd mbedtls-$MBEDTLS_VER
-        make SHARED=1 CFLAGS=-fPIC
-        make DESTDIR=/usr install
-        cd ..
-        ldconfig
-        if [ ! -f /usr/lib/libmbedtls.a ];then
-            echo "\033[1;31mFailed to install MbedTLS.\033[0m"
             exit 1
         fi
     fi
@@ -228,7 +208,6 @@ install_all(){
     set_domain
     pre_install
     install_libsodium
-    install_mbedtls
     get_latest_ver
     install_ss
     install_v2
