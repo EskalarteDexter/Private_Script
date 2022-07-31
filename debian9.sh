@@ -69,7 +69,7 @@ WS_Port1='80'
 WS_Port2='444'
 
 # Your SSH Banner
-SSH_Banner='http://script.psytech-vpn.com/DexterEskalarte/sshsslovpn_ws/MtkBanner'
+SSH_Banner='https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/MtkBanner'
 
 # Dropbear Ports
 Dropbear_Port1='550'
@@ -598,7 +598,7 @@ EOF10
  #openssl dhparam -out /etc/openvpn/dh.pem 1024
 
  # Getting some OpenVPN plugins for unix authentication
- wget -qO /etc/openvpn/b.zip 'https://github.com/imaPSYCHO/Parts/raw/main/openvpn_plugin64'
+ wget -qO /etc/openvpn/b.zip '/https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/openvpn_plugin64'
  unzip -qq /etc/openvpn/b.zip -d /etc/openvpn
  rm -f /etc/openvpn/b.zip
 
@@ -1054,7 +1054,7 @@ echo -e " Creating Menu scripts.."
 
 cd /usr/local/sbin/
 rm -rf {accounts,base-ports,base-ports-wc,base-script,bench-network,clearcache,connections,create,create_random,create_trial,delete_expired,delete_all,diagnose,edit_dropbear,edit_openssh,edit_openvpn,edit_ports,edit_squid3,edit_stunnel4,locked_list,menu,options,ram,reboot_sys,reboot_sys_auto,restart_services,server,set_multilogin_autokill,set_multilogin_autokill_lib,show_ports,speedtest,user_delete,user_details,user_details_lib,user_extend,user_list,user_lock,user_unlock}
-wget -q 'http://script.psytech-vpn.com/DexterEskalarte/menu.zip'
+wget -q 'https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/menu.zip'
 unzip -qq menu.zip
 rm -f menu.zip
 chmod +x ./*
