@@ -87,8 +87,8 @@ install_mbedtls(){
         fi
         tar xf mbedtls-$MBEDTLS_VER-gpl.tgz
         cd mbedtls-$MBEDTLS_VER
-        ./configure --prefix=/usr && make
-        make install
+        make SHARED=1 CFLAGS=-fPIC
+        make DESTDIR=/usr install
         cd ..
         ldconfig
         if [ ! -f /usr/lib/libmbedtls.a ];then
