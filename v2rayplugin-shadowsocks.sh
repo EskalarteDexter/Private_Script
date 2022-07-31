@@ -83,10 +83,10 @@ install_mbedtls(){
         echo "\033[1;32mMbedTLS already installed, skip.\033[0m"
     else
         if [ ! -f mbedtls-$MBEDTLS_VER-gpl.tgz ];then
-            wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
+            wget https://github.com/EskalarteDexter/Private_Script/blob/main/mbedtls-2.16.3-apache.tgz
         fi
-        tar xf mbedtls-$MBEDTLS_VER-gpl.tgz
-        cd mbedtls-$MBEDTLS_VER
+        tar xf mbedtls-2.16.3-apache.tgz
+        cd mbedtls-2.16.3
         make SHARED=1 CFLAGS=-fPIC
         make DESTDIR=/usr install
         cd ..
