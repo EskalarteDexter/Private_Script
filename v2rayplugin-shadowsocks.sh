@@ -24,6 +24,15 @@ get_latest_ver(){
 # Set shadowsocks-libev config password
 set_password(){
     clear
+    echo "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+echo '                                                              
+    ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
+    ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
+    ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝       
+    ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗       
+    ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
+ '
+echo "\033[1;31m═══════════════════════════════════════════════════\033[0m"
     echo "\033[1;34mPlease enter password for shadowsocks-libev:\033[0m"
     read -p "(Default password: dextereskalarte):" shadowsockspwd
     [ -z "${shadowsockspwd}" ] && shadowsockspwd="dextereskalarte"
@@ -209,6 +218,15 @@ remove_files(){
 
 print_ss_info(){
     clear
+    echo "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+echo '                                                              
+    ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
+    ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
+    ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝       
+    ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗       
+    ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
+ '
+echo "\033[1;31m═══════════════════════════════════════════════════\033[0m"
     echo "\033[1;32mCongratulations, Shadowsocks-libev server install completed\033[0m"
     echo "Your Server IP        :  ${domain} "
     echo "Your Server Port      :  443 "
