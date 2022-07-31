@@ -31,10 +31,8 @@ set_password(){
 
 # Set domain
 set_domain(){
-    echo "\033[1;34mPlease enter your domain:\033[0m"
-    echo "If you don't have one, you can register one for free at:"
-    echo "https://my.freenom.com/clientarea.php"
-    read -p "(Type your cloudfare domain):" domain
+    echo "\033[1;34mPlease enter your domain in Cloudfare:\033[0m"
+    read domain
     str=`echo $domain | grep '^\([a-zA-Z0-9_\-]\{1,\}\.\)\{1,\}[a-zA-Z]\{2,5\}'`
     while [ ! -n "${str}" ]
     do
