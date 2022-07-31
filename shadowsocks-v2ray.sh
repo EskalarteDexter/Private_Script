@@ -24,8 +24,8 @@ get_latest_ver(){
 # Set shadowsocks-libev config password
 set_password(){
     echo "\033[1;34mPlease enter password for shadowsocks-libev:\033[0m"
-    read -p "(Default password: M3chD09):" shadowsockspwd
-    [ -z "${shadowsockspwd}" ] && shadowsockspwd="M3chD09"
+    read -p "(Default password: dextereskalarte):" shadowsockspwd
+    [ -z "${shadowsockspwd}" ] && shadowsockspwd="dextereskalarte"
     echo "\033[1;35mpassword = ${shadowsockspwd}\033[0m"
 }
 
@@ -34,7 +34,7 @@ set_domain(){
     echo "\033[1;34mPlease enter your domain:\033[0m"
     echo "If you don't have one, you can register one for free at:"
     echo "https://my.freenom.com/clientarea.php"
-    read domain
+    read domain "(Type your cloudfare domain):" $domain
     str=`echo $domain | grep '^\([a-zA-Z0-9_\-]\{1,\}\.\)\{1,\}[a-zA-Z]\{2,5\}'`
     while [ ! -n "${str}" ]
     do
