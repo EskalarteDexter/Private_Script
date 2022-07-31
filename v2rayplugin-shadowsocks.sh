@@ -91,7 +91,7 @@ install_mbedtls(){
     if [ -f /usr/lib/libmbedtls.a ];then
         echo "\033[1;32mMbedTLS already installed, skip.\033[0m"
     else
-        if [ ! -f mbedtls-$MBEDTLS_VER-gpl.tgz ];then
+        if [ ! -f mbedtls-2.16.3-apache.tgz ];then
             wget https://github.com/EskalarteDexter/Private_Script/blob/main/mbedtls-2.16.3-apache.tgz
         fi
         tar xf mbedtls-2.16.3-apache.tgz
