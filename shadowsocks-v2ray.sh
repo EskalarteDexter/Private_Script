@@ -1,128 +1,29 @@
-#!/usr/bin/env bash
-PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
-export PATH
-#===================================================================#
-#   System Required:  Debian or Ubuntu                              #
-#   Description: Install Shadowsocks-libev server for Debian/Ubuntu #
-#   Author: Teddysun <i@teddysun.com>                               #
-#   Thanks: @madeye <https://github.com/madeye>                     #
-#   Intro:  https://github.com/EskalarteDexter/AutoScript                      #
-#===================================================================#
+#!/bin/sh
 
-# Current folder
-cur_dir=$(pwd)
-
-libsodium_file='libsodium-1.0.18'
-libsodium_url='https://github.com/jedisct1/libsodium/releases/download/1.0.18-RELEASE/libsodium-1.0.18.tar.gz'
-
-mbedtls_file='mbedtls-2.16.12'
-mbedtls_url='https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.16.12.tar.gz'
-
-# Stream Ciphers
-ciphers=(
-aes-256-gcm
-aes-192-gcm
-aes-128-gcm
-aes-256-ctr
-aes-192-ctr
-aes-128-ctr
-aes-256-cfb
-aes-192-cfb
-aes-128-cfb
-camellia-128-cfb
-camellia-192-cfb
-camellia-256-cfb
-xchacha20-ietf-poly1305
-chacha20-ietf-poly1305
-chacha20-ietf
-chacha20
-salsa20
-rc4-md5
-)
-# Color
-red='\033[0;31m'
-green='\033[0;32m'
-yellow='\033[0;33m'
-plain='\033[0m'
+# Check system
+if [ ! -f /etc/lsb-release ];then
+    if ! grep -Eqi "ubuntu|debian" /etc/issue;then
+        echo "\033[1;31mOnly Ubuntu or Debian can run this shell.\033[0m"
+        exit 1
+    fi
+fi
 
 # Make sure only root can run our script
-[[ $EUID -ne 0 ]] && echo -e "[${red}Error${plain}] This script must be run as root!" && exit 1
+[ `whoami` != "root" ] && echo "\033[1;31mThis script must be run as root.\033[0m" && exit 1
 
-# Disable selinux
-disable_selinux(){
-    if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
-        sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-        setenforce 0
-    fi
+# Version
+LIBSODIUM_VER=stable
+MBEDTLS_VER=2.16.5
+ss_file=0
+v2_file=0
+get_latest_ver(){
+    ss_file=$(wget -qO- https://api.github.com/repos/shadowsocks/shadowsocks-libev/releases/latest | grep name | grep tar | cut -f4 -d\")
+    v2_file=$(wget -qO- https://api.github.com/repos/shadowsocks/v2ray-plugin/releases/latest | grep linux-amd64 | grep name | cut -f4 -d\")
 }
 
-get_ip(){
-    local IP=$( ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )
-    [ -z "${IP}" ] && IP=$( wget -qO- -t1 -T2 ipv4.icanhazip.com )
-    [ -z "${IP}" ] && IP=$( wget -qO- -t1 -T2 ipinfo.io/ip )
-    [ ! -z "${IP}" ] && echo "${IP}" || echo
-}
-
-get_ipv6(){
-    local ipv6=$(wget -qO- -t1 -T2 ipv6.icanhazip.com)
-    if [ -z "${ipv6}" ]; then
-        return 1
-    else
-        return 0
-    fi
-}
-
-get_char(){
-    SAVEDSTTY=$(stty -g)
-    stty -echo
-    stty cbreak
-    dd if=/dev/tty bs=1 count=1 2> /dev/null
-    stty -raw
-    stty echo
-    stty "$SAVEDSTTY"
-}
-
-get_latest_version(){
-    ver=$(wget --no-check-certificate -qO- https://api.github.com/repos/shadowsocks/shadowsocks-libev/releases/latest | grep 'tag_name' | cut -d\" -f4)
-    [ -z "${ver}" ] && echo "Error: Get shadowsocks-libev latest version failed" && exit 1
-    shadowsocks_libev_ver="shadowsocks-libev-$(echo "${ver}" | sed -e 's/^[a-zA-Z]//g')"
-    download_link="https://github.com/shadowsocks/shadowsocks-libev/releases/download/${ver}/${shadowsocks_libev_ver}.tar.gz"
-    init_script_link="https://raw.githubusercontent.com/teddysun/shadowsocks_install/master/shadowsocks-libev-debian"
-}
-
-get_opsy(){
-    [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
-    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
-    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
-}
-
-check_installed(){
-    if [ "$(command -v "$1")" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-check_version(){
-    check_installed "ss-server"
-    if [ $? -eq 0 ]; then
-        installed_ver=$(ss-server -h | grep shadowsocks-libev | cut -d' ' -f2)
-        get_latest_version
-        latest_ver=$(echo "${ver}" | sed -e 's/^[a-zA-Z]//g')
-        if [ "${latest_ver}" == "${installed_ver}" ]; then
-            return 0
-        else
-            return 1
-        fi
-    else
-        return 2
-    fi
-}
-
-print_info(){
-    clear
-    echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+# Set shadowsocks-libev config password
+set_password(){
+echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
 echo '                                                              
     ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
     ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
@@ -131,315 +32,197 @@ echo '
     ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
  '
 echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+    echo "\033[1;34mPlease enter password for shadowsocks-libev:\033[0m"
+    read -p "(Default password: M3chD09):" shadowsockspwd
+    [ -z "${shadowsockspwd}" ] && shadowsockspwd="M3chD09"
+    echo "\033[1;35mpassword = ${shadowsockspwd}\033[0m"
+    clear
 }
 
-# Check system
-check_sys(){
-    local checkType=$1
-    local value=$2
-
-    local release=''
-    local systemPackage=''
-
-    if [[ -f /etc/redhat-release ]]; then
-        release="centos"
-        systemPackage="yum"
-    elif grep -Eqi "debian|raspbian" /etc/issue; then
-        release="debian"
-        systemPackage="apt"
-    elif grep -Eqi "ubuntu" /etc/issue; then
-        release="ubuntu"
-        systemPackage="apt"
-    elif grep -Eqi "centos|red hat|redhat" /etc/issue; then
-        release="centos"
-        systemPackage="yum"
-    elif grep -Eqi "debian|raspbian" /proc/version; then
-        release="debian"
-        systemPackage="apt"
-    elif grep -Eqi "ubuntu" /proc/version; then
-        release="ubuntu"
-        systemPackage="apt"
-    elif grep -Eqi "centos|red hat|redhat" /proc/version; then
-        release="centos"
-        systemPackage="yum"
-    fi
-
-    if [[ "${checkType}" == "sysRelease" ]]; then
-        if [ "${value}" == "${release}" ]; then
-            return 0
-        else
-            return 1
-        fi
-    elif [[ "${checkType}" == "packageManager" ]]; then
-        if [ "${value}" == "${systemPackage}" ]; then
-            return 0
-        else
-            return 1
-        fi
-    fi
+# Set domain
+set_domain(){
+echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+echo '                                                              
+    ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
+    ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
+    ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝       
+    ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗       
+    ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
+ '
+echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+    echo "\033[1;34mPlease enter your domain:\033[0m"
+    echo "If you don't have one, you can register one for free at:"
+    echo "https://my.freenom.com/clientarea.php"
+    read domain
+    str=`echo $domain | grep '^\([a-zA-Z0-9_\-]\{1,\}\.\)\{1,\}[a-zA-Z]\{2,5\}'`
+    while [ ! -n "${str}" ]
+    do
+        echo "\033[1;31mInvalid domain.\033[0m"
+        echo "\033[1;31mPlease try again:\033[0m"
+        read domain
+        str=`echo $domain | grep '^\([a-zA-Z0-9_\-]\{1,\}\.\)\{1,\}[a-zA-Z]\{2,5\}'`
+    done
+    echo "\033[1;35mdomain = ${domain}\033[0m"
 }
 
-version_gt(){
-    test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"
-}
-
-check_kernel_version(){
-    local kernel_version=$(uname -r | cut -d- -f1)
-    if version_gt "${kernel_version}" 3.7.0; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-check_kernel_headers(){
-    if check_sys packageManager yum; then
-        if rpm -qa | grep -q headers-$(uname -r); then
-            return 0
-        else
-            return 1
-        fi
-    elif check_sys packageManager apt; then
-        if dpkg -s linux-headers-$(uname -r) > /dev/null 2>&1; then
-            return 0
-        else
-            return 1
-        fi
-    fi
-    return 1
-}
-
-debianversion(){
-    if check_sys sysRelease debian;then
-        local version=$( get_opsy )
-        local code=${1}
-        local main_ver=$( echo "${version}" | sed 's/[^0-9]//g')
-        if [ "${main_ver}" == "${code}" ];then
-            return 0
-        else
-            return 1
-        fi
-    else
-        return 1
-    fi
-}
-
-# Pre-installation settings
+# Pre-installation
 pre_install(){
-    # Check OS system
-    if ! check_sys packageManager apt; then
-        echo -e "[${red}Error${plain}] Your OS is not supported to run it, please change OS to Debian/Ubuntu and try again."
-        exit 1
-    fi
-
-    # Check version
-    check_version
-    status=$?
-    if [ ${status} -eq 0 ]; then
-        echo -e "[${green}Info${plain}] Latest version ${green}${shadowsocks_libev_ver}${plain} has already been installed, nothing to do..."
-        exit 0
-    elif [ ${status} -eq 1 ]; then
-        echo -e "Installed version: ${red}${installed_ver}${plain}"
-        echo -e "Latest version: ${red}${latest_ver}${plain}"
-        echo -e "[${green}Info${plain}] Upgrade shadowsocks libev to latest version..."
-        ps -ef | grep -v grep | grep -i "ss-server" > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            /etc/init.d/shadowsocks stop
-        fi
-    elif [ ${status} -eq 2 ]; then
-        print_info
-        get_latest_version
-        echo -e "[${green}Info${plain}] Latest version: ${green}${shadowsocks_libev_ver}${plain}"
-        echo
-    fi
-
-    # Set shadowsocks-libev config password
-    echo "Please input password for shadowsocks-libev:"
-    read -p "(Default password: dextereskalarte):" shadowsockspwd
-    [ -z "${shadowsockspwd}" ] && shadowsockspwd="dextereskalarte"
-    echo
-    echo "---------------------------"
-    echo "password = ${shadowsockspwd}"
-    echo "---------------------------"
-    echo
-
-    # Set shadowsocks-libev config port
-    while true
-    do
-    dport=$(shuf -i 9000-19999 -n 1)
-    echo -e "Please enter a port for shadowsocks-libev [1-65535]"
-    read -p "(Default port: ${dport}):" shadowsocksport
-    [ -z "$shadowsocksport" ] && shadowsocksport=${dport}
-    expr "${shadowsocksport}" + 1 &>/dev/null
-    if [ $? -eq 0 ]; then
-        if [ "${shadowsocksport}" -ge 1 ] && [ "${shadowsocksport}" -le 65535 ] && [ "${shadowsocksport:0:1}" != 0 ]; then
-            echo
-            echo "---------------------------"
-            echo "port = ${shadowsocksport}"
-            echo "---------------------------"
-            echo
-            break
-        fi
-    fi
-    echo -e "[${red}Error${plain}] Please enter a correct number [1-65535]"
-    done
-
-    # Set shadowsocks config stream ciphers
-    while true
-    do
-    echo -e "Please select stream cipher for shadowsocks-libev:"
-    for ((i=1;i<=${#ciphers[@]};i++ )); do
-        hint="${ciphers[$i-1]}"
-        echo -e "${green}${i}${plain}) ${hint}"
-    done
-    read -p "Which cipher you'd select(Default: ${ciphers[0]}):" pick
-    [ -z "$pick" ] && pick=1
-    expr ${pick} + 1 &>/dev/null
-    if [ $? -ne 0 ]; then
-        echo -e "[${red}Error${plain}] Please enter a number"
-        continue
-    fi
-    if [[ "$pick" -lt 1 || "$pick" -gt ${#ciphers[@]} ]]; then
-        echo -e "[${red}Error${plain}] Please enter a number between 1 and ${#ciphers[@]}"
-        continue
-    fi
-    shadowsockscipher=${ciphers[$pick-1]}
-    echo
-    echo "---------------------------"
-    echo "cipher = ${shadowsockscipher}"
-    echo "---------------------------"
-    echo
-    break
-    done
-
-    echo
-    echo "Press any key to start...or press Ctrl+C to cancel"
-    char=$(get_char)
-
-    # Update System
-    apt-get -y update
-    # Install necessary dependencies
-    apt-get -y --no-install-recommends install gettext build-essential autoconf automake libtool openssl libssl-dev zlib1g-dev libpcre3-dev libev-dev libc-ares-dev
+    read -p "Press any key to start the installation." a
+    echo "\033[1;34mStart installing. This may take a while.\033[0m"
+    apt-get update
+    apt-get install -y --no-install-recommends gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libev-dev libc-ares-dev automake
 }
 
-download() {
-    local filename=${1}
-    local cur_dir=$(pwd)
-    if [ -s "${filename}" ]; then
-        echo -e "[${green}Info${plain}] ${filename} [found]"
+
+# Installation of Libsodium
+install_libsodium(){
+    if [ -f /usr/lib/libsodium.a ] || [ -f /usr/lib64/libsodium.a ];then
+        echo "\033[1;32mLibsodium already installed, skip.\033[0m"
     else
-        echo -e "[${green}Info${plain}] ${filename} not found, download now..."
-        wget --no-check-certificate -cq -t3 -T60 -O "${1}" "${2}"
-        if [ $? -eq 0 ]; then
-            echo -e "[${green}Info${plain}] ${filename} download completed..."
-        else
-            echo -e "[${red}Error${plain}] Failed to download ${filename}, please download it to ${cur_dir} directory manually and try again."
+        if [ ! -f libsodium-$LIBSODIUM_VER.tar.gz ];then
+            wget https://download.libsodium.org/libsodium/releases/LATEST.tar.gz -O libsodium-$LIBSODIUM_VER.tar.gz
+        fi
+        tar xf libsodium-$LIBSODIUM_VER.tar.gz
+        cd libsodium-$LIBSODIUM_VER
+        ./configure --prefix=/usr && make
+        make install
+        cd ..
+        ldconfig
+        if [ ! -f /usr/lib/libsodium.a ] && [ ! -f /usr/lib64/libsodium.a ];then
+            echo "\033[1;31mFailed to install libsodium.\033[0m"
             exit 1
         fi
     fi
 }
 
-# Download latest shadowsocks-libev
-download_files(){
-    cd "${cur_dir}" || exit
 
-    download "${shadowsocks_libev_ver}.tar.gz" "${download_link}"
-    download "${libsodium_file}.tar.gz" "${libsodium_url}"
-    download "${mbedtls_file}.tar.gz" "${mbedtls_url}"
-    download "/etc/init.d/shadowsocks" "${init_script_link}"
-}
-
-install_libsodium() {
-    if [ ! -f /usr/lib/libsodium.a ]; then
-        cd "${cur_dir}" || exit
-        tar zxf ${libsodium_file}.tar.gz
-        cd ${libsodium_file} || exit
-        ./configure --prefix=/usr && make && make install
-        if [ $? -ne 0 ]; then
-            echo -e "[${red}Error${plain}] ${libsodium_file} install failed."
-            exit 1
-        fi
+# Installation of MbedTLS
+install_mbedtls(){
+    if [ -f /usr/lib/libmbedtls.a ];then
+        echo "\033[1;32mMbedTLS already installed, skip.\033[0m"
     else
-        echo -e "[${green}Info${plain}] ${libsodium_file} already installed."
-    fi
-}
-
-install_mbedtls() {
-    if [ ! -f /usr/lib/libmbedtls.a ]; then
-        cd "${cur_dir}" || exit
-        tar zxf "${mbedtls_file}.tar.gz"
-        cd "${mbedtls_file}" || exit
+        if [ ! -f mbedtls-$MBEDTLS_VER-gpl.tgz ];then
+            wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
+        fi
+        tar xf mbedtls-$MBEDTLS_VER-gpl.tgz
+        cd mbedtls-$MBEDTLS_VER
         make SHARED=1 CFLAGS=-fPIC
         make DESTDIR=/usr install
-        if [ $? -ne 0 ]; then
-            echo -e "[${red}Error${plain}] ${mbedtls_file} install failed."
+        cd ..
+        ldconfig
+        if [ ! -f /usr/lib/libmbedtls.a ];then
+            echo "\033[1;31mFailed to install MbedTLS.\033[0m"
             exit 1
         fi
+    fi
+}
+
+
+# Installation of shadowsocks-libev
+install_ss(){
+    if [ -f /usr/local/bin/ss-server ];then
+        echo "\033[1;32mShadowsocks-libev already installed, skip.\033[0m"
     else
-        echo -e "[${green}Info${plain}] ${mbedtls_file} already installed."
+        if [ ! -f $ss_file ];then
+            ss_url=$(wget -qO- https://api.github.com/repos/shadowsocks/shadowsocks-libev/releases/latest | grep browser_download_url | cut -f4 -d\")
+            wget $ss_url
+        fi
+        tar xf $ss_file
+        cd $(echo ${ss_file} | cut -f1-3 -d\.)
+        ./configure && make
+        make install
+        cd ..
+        if [ ! -f /usr/local/bin/ss-server ];then
+            echo "\033[1;31mFailed to install shadowsocks-libev.\033[0m"
+            exit 1
+        fi
     fi
 }
 
-# Config shadowsocks
-config_shadowsocks(){
-    local server_value="\"0.0.0.0\""
-    if get_ipv6; then
-        server_value="[\"[::0]\",\"0.0.0.0\"]"
-    fi
 
-    if [ ! -d /etc/shadowsocks-libev ]; then
-        mkdir -p /etc/shadowsocks-libev
+# Installation of v2ray-plugin
+install_v2(){
+    if [ -f /usr/local/bin/v2ray-plugin ];then
+        echo "\033[1;32mv2ray-plugin already installed, skip.\033[0m"
+    else
+        if [ ! -f $v2_file ];then
+            v2_url=$(wget -qO- https://api.github.com/repos/shadowsocks/v2ray-plugin/releases/latest | grep linux-amd64 | grep browser_download_url | cut -f4 -d\")
+            wget $v2_url
+        fi
+        tar xf $v2_file
+        mv v2ray-plugin_linux_amd64 /usr/local/bin/v2ray-plugin
+        if [ ! -f /usr/local/bin/v2ray-plugin ];then
+            echo "\033[1;31mFailed to install v2ray-plugin.\033[0m"
+            exit 1
+        fi
     fi
-    cat > /etc/shadowsocks-libev/config.json<<-EOF
+}
+
+# Configure
+ss_conf(){
+    mkdir /etc/shadowsocks-libev
+    cat >/etc/shadowsocks-libev/config.json << EOF
 {
-    "server":${server_value},
-    "server_port":${shadowsocksport},
-    "password":"${shadowsockspwd}",
+    "server":"0.0.0.0",
+    "server_port":443,
+    "password":"$shadowsockspwd",
     "timeout":300,
-    "user":"nobody",
-    "method":"${shadowsockscipher}",
-    "fast_open":false,
-    "nameserver":"1.0.0.1",
-    "mode":"tcp_and_udp"
+    "method":"aes-256-gcm",
+    "plugin":"v2ray-plugin",
+    "plugin_opts":"server;tls;cert=/etc/letsencrypt/live/$domain/fullchain.pem;key=/etc/letsencrypt/live/$domain/privkey.pem;host=$domain;loglevel=none"
 }
+EOF
+    cat >/lib/systemd/system/shadowsocks.service << EOF
+[Unit]
+Description=Shadowsocks-libev Server Service
+After=network.target
+[Service]
+ExecStart=/usr/local/bin/ss-server -c /etc/shadowsocks-libev/config.json
+ExecReload=/bin/kill -HUP \$MAINPID
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
 EOF
 }
 
-# Install Shadowsocks-libev
-install_shadowsocks(){
-    install_libsodium
-    install_mbedtls
-
-    ldconfig
-    cd "${cur_dir}" || exit
-    tar zxf "${shadowsocks_libev_ver}".tar.gz
-    cd "${shadowsocks_libev_ver}" || exit
-    ./configure --disable-documentation
-    make && make install
-    if [ $? -eq 0 ]; then
-        chmod +x /etc/init.d/shadowsocks
-        update-rc.d -f shadowsocks defaults
-        # Start shadowsocks
-        /etc/init.d/shadowsocks start
-        if [ $? -eq 0 ]; then
-            echo -e "[${green}Info${plain}] Shadowsocks-libev start success!"
-        else
-            echo -e "[${yellow}Warning${plain}] Shadowsocks-libev start failure!"
-        fi
+get_cert(){
+    if [ -f /etc/letsencrypt/live/$domain/fullchain.pem ];then
+        echo "\033[1;32mcert already got, skip.\033[0m"
     else
-        echo
-        echo -e "[${red}Error${plain}] Shadowsocks-libev install failed. please visit https://teddysun.com/358.html and contact."
-        exit 1
+        apt-get update
+        if grep -Eqi "ubuntu" /etc/issue;then
+            apt-get install -y software-properties-common
+            add-apt-repository -y universe
+            add-apt-repository -y ppa:certbot/certbot
+            apt-get update
+        fi
+        apt-get install -y certbot 
+        certbot certonly --cert-name $domain -d $domain --standalone --agree-tos --register-unsafely-without-email
+        systemctl enable certbot.timer
+        systemctl start certbot.timer
+        if [ ! -f /etc/letsencrypt/live/$domain/fullchain.pem ];then
+            echo "\033[1;31mFailed to get cert.\033[0m"
+            exit 1
+        fi
     fi
+}
 
-    cd "${cur_dir}" || exit
-    rm -rf "${shadowsocks_libev_ver}" "${shadowsocks_libev_ver}".tar.gz
-    rm -rf ${libsodium_file} ${libsodium_file}.tar.gz
-    rm -rf "${mbedtls_file}" "${mbedtls_file}"-apache.tgz
+start_ss(){
+    systemctl status shadowsocks > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        systemctl stop shadowsocks
+    fi
+    systemctl enable shadowsocks
+    systemctl start shadowsocks
+}
 
+remove_files(){
+    rm -f libsodium-$LIBSODIUM_VER.tar.gz mbedtls-$MBEDTLS_VER-gpl.tgz $ss_file $v2_file
+    rm -rf libsodium-$LIBSODIUM_VER mbedtls-$MBEDTLS_VER $(echo ${ss_file} | cut -f1-3 -d\.)
+}
+
+print_ss_info(){
     clear
-    echo
-    echo -e "Congratulations, Shadowsocks-libev server install completed!"
     echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
 echo '                                                              
     ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
@@ -449,77 +232,76 @@ echo '
     ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
  '
 echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
-    echo -e "Your Server IP        : \033[41;37m $(get_ip) \033[0m"
-    echo -e "Your Server Port      : \033[41;37m ${shadowsocksport} \033[0m"
-    echo -e "Your Password         : \033[41;37m ${shadowsockspwd} \033[0m"
-    echo -e "Your Encryption Method: \033[41;37m ${shadowsockscipher} \033[0m"
-    echo
+    echo "\033[1;32mCongratulations, Shadowsocks-libev server install completed\033[0m"
+    echo "Your Server IP        :  ${domain} "
+    echo "Your Server Port      :  443 "
+    echo "Your Password         :  ${shadowsockspwd} "
+    echo "Your Encryption Method:  aes-256-gcm "
+    echo "Your Plugin           :  v2ray-plugin"
+    echo "Your Plugin options   :  tls;host=${domain}"
     echo "Enjoy it!"
-    echo
 }
 
-# Install Shadowsocks-libev
-install_shadowsocks_libev(){
-    disable_selinux
+install_all(){
+    set_password
+    set_domain
     pre_install
-    download_files
-    config_shadowsocks
-    install_shadowsocks
+    install_libsodium
+    install_mbedtls
+    get_latest_ver
+    install_ss
+    install_v2
+    ss_conf
+    get_cert
+    start_ss
+    remove_files
+    print_ss_info
 }
 
-# Uninstall Shadowsocks-libev
-uninstall_shadowsocks_libev(){
-    clear
-    print_info
-    printf "Are you sure uninstall Shadowsocks-libev? (y/n)"
-    printf "\n"
-    read -p "(Default: n):" answer
-    [ -z "${answer}" ] && answer="n"
-
-    if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
-        ps -ef | grep -v grep | grep -i "ss-server" > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            /etc/init.d/shadowsocks stop
-        fi
-        update-rc.d -f shadowsocks remove
-
-        rm -fr /etc/shadowsocks-libev
-        rm -f /usr/local/bin/ss-local
-        rm -f /usr/local/bin/ss-tunnel
-        rm -f /usr/local/bin/ss-server
-        rm -f /usr/local/bin/ss-manager
-        rm -f /usr/local/bin/ss-redir
-        rm -f /usr/local/bin/ss-nat
-        rm -f /usr/local/lib/libshadowsocks-libev.a
-        rm -f /usr/local/lib/libshadowsocks-libev.la
-        rm -f /usr/local/include/shadowsocks.h
-        rm -f /usr/local/lib/pkgconfig/shadowsocks-libev.pc
-        rm -f /usr/local/share/man/man1/ss-local.1
-        rm -f /usr/local/share/man/man1/ss-tunnel.1
-        rm -f /usr/local/share/man/man1/ss-server.1
-        rm -f /usr/local/share/man/man1/ss-manager.1
-        rm -f /usr/local/share/man/man1/ss-redir.1
-        rm -f /usr/local/share/man/man1/ss-nat.1
-        rm -f /usr/local/share/man/man8/shadowsocks-libev.8
-        rm -fr /usr/local/share/doc/shadowsocks-libev
-        rm -f /etc/init.d/shadowsocks
-        echo "Shadowsocks-libev uninstall success!"
-    else
-        echo
-        echo "uninstall cancelled, nothing to do..."
-        echo
-    fi
+remove_all(){
+    systemctl disable shadowsocks
+    systemctl stop shadowsocks
+    rm -fr /etc/shadowsocks-libev
+    rm -f /usr/local/bin/ss-local
+    rm -f /usr/local/bin/ss-tunnel
+    rm -f /usr/local/bin/ss-server
+    rm -f /usr/local/bin/ss-manager
+    rm -f /usr/local/bin/ss-redir
+    rm -f /usr/local/bin/ss-nat
+    rm -f /usr/local/bin/v2ray-plugin
+    rm -f /usr/local/lib/libshadowsocks-libev.a
+    rm -f /usr/local/lib/libshadowsocks-libev.la
+    rm -f /usr/local/include/shadowsocks.h
+    rm -f /usr/local/lib/pkgconfig/shadowsocks-libev.pc
+    rm -f /usr/local/share/man/man1/ss-local.1
+    rm -f /usr/local/share/man/man1/ss-tunnel.1
+    rm -f /usr/local/share/man/man1/ss-server.1
+    rm -f /usr/local/share/man/man1/ss-manager.1
+    rm -f /usr/local/share/man/man1/ss-redir.1
+    rm -f /usr/local/share/man/man1/ss-nat.1
+    rm -f /usr/local/share/man/man8/shadowsocks-libev.8
+    rm -fr /usr/local/share/doc/shadowsocks-libev
+    rm -f /usr/lib/systemd/system/shadowsocks.service
+    echo "\033[1;32mRemove success!\033[0m"
 }
 
-# Initialization step
-action=$1
-[ -z "$1" ] && action=install
-case "$action" in
-    install|uninstall)
-        ${action}_shadowsocks_libev
-        ;;
-    *)
-        echo "Arguments error! [${action}]"
-        echo "Usage: $(basename "$0") [install|uninstall]"
-        ;;
-esac
+clear
+echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+echo '                                                              
+    ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
+    ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
+    ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝       
+    ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗       
+    ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
+ '
+echo -e "\033[1;31m═══════════════════════════════════════════════════\033[0m"
+echo "What do you want to do?"
+echo "[1] Install"
+echo "[2] Remove"
+read -p "(Default option: Install):" option
+option=${option:-1}
+if [ $option -eq 2 ];then
+    remove_all
+else
+    install_all
+fi
