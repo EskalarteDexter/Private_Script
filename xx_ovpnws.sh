@@ -756,7 +756,7 @@ install_done()
   echo
   echo
   history -c;
-  rm /root/.installer
+  rm /root/.xx_ovpnws.sh
   echo "Server will secure this server and reboot after 5 seconds"
   sleep 5
   reboot
