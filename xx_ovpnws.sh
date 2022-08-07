@@ -285,7 +285,7 @@ sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 echo '# Openvpn Configuration by Firenet Philippines :)
 dev tun
-port 53
+port 110
 proto udp
 topology subnet
 server 10.30.0.0 255.255.252.0
@@ -747,8 +747,8 @@ install_done()
   echo "OPENVPN SERVER FIRENET"
   echo "IP : $(curl -s https://api.ipify.org)"
   echo "OPENVPN TCP port : 1194"
-  echo "OPENVPN UDP port : 53"
-  echo "OPENVPN SSL port : 442"
+  echo "OPENVPN UDP port : 110"
+  echo "OPENVPN SSL port : 443"
   echo "OPENVPN WS port : 80"
   echo "SOCKS port : 80"
   echo "PROXY port : 3128"
