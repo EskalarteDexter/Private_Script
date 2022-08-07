@@ -430,7 +430,7 @@ client = no
 
 
 [openvpn]
-accept = 444
+accept = 443
 connect = 127.0.0.1:1194'| sudo tee /etc/stunnel/stunnel.conf
 
 apt-get install netcat lsof php php-mysqli php-mysql php-gd php-mbstring python -y
@@ -438,21 +438,20 @@ cat << \socksopenvpn > /usr/local/sbin/proxy.py
 #!/usr/bin/env python3
 # encoding: utf-8
 # SocksProxy By: Ykcir Ogotip Caayon
-import socket, threading, thread, select, signal, sys, time
-from os import system
-system("clear")
-#conexao
-IP = '0.0.0.0'
-try:
-   PORT = int(sys.argv[1])
-except:
-   PORT = 8000
+import socket, threading, thread, select, signal, sys, time, getopt
+
+# CONFIG
+LISTENING_ADDR = '0.0.0.0'
+LISTENING_PORT = 80
+
 PASS = ''
-BUFLEN = 8196 * 8
+
+# CONST
+BUFLEN = 4096 * 4
 TIMEOUT = 60
-MSG = 'Tk@Network'
-DEFAULT_HOST = '0.0.0.0:1194'
-RESPONSE = "HTTP/1.1 200 " + str(MSG) + "\r\n\r\n"
+DEFAULT_HOST = '127.0.0.1:1194'
+RESPONSE = 'HTTP/1.1 101 Switching Protocols \r\n\r\n'
+
 
 class Server(threading.Thread):
     def __init__(self, host, port):
@@ -461,8 +460,8 @@ class Server(threading.Thread):
         self.host = host
         self.port = port
         self.threads = []
-	self.threadsLock = threading.Lock()
-	self.logLock = threading.Lock()
+        self.threadsLock = threading.Lock()
+        self.logLock = threading.Lock()
 
     def run(self):
         self.soc = socket.socket(socket.AF_INET)
@@ -472,26 +471,26 @@ class Server(threading.Thread):
         self.soc.listen(0)
         self.running = True
 
-        try:                    
+        try:
             while self.running:
                 try:
                     c, addr = self.soc.accept()
                     c.setblocking(1)
                 except socket.timeout:
                     continue
-                
+
                 conn = ConnectionHandler(c, self, addr)
-                conn.start();
+                conn.start()
                 self.addConn(conn)
         finally:
             self.running = False
             self.soc.close()
-            
+
     def printLog(self, log):
         self.logLock.acquire()
         print log
         self.logLock.release()
-	
+
     def addConn(self, conn):
         try:
             self.threadsLock.acquire()
@@ -499,25 +498,25 @@ class Server(threading.Thread):
                 self.threads.append(conn)
         finally:
             self.threadsLock.release()
-                    
+
     def removeConn(self, conn):
         try:
             self.threadsLock.acquire()
             self.threads.remove(conn)
         finally:
             self.threadsLock.release()
-                
+
     def close(self):
         try:
             self.running = False
             self.threadsLock.acquire()
-            
+
             threads = list(self.threads)
             for c in threads:
                 c.close()
         finally:
             self.threadsLock.release()
-			
+
 
 class ConnectionHandler(threading.Thread):
     def __init__(self, socClient, server, addr):
@@ -527,7 +526,7 @@ class ConnectionHandler(threading.Thread):
         self.client = socClient
         self.client_buffer = ''
         self.server = server
-        self.log = 'Conexao: ' + str(addr)
+        self.log = 'Connection: ' + str(addr)
 
     def close(self):
         try:
@@ -538,7 +537,7 @@ class ConnectionHandler(threading.Thread):
             pass
         finally:
             self.clientClosed = True
-            
+
         try:
             if not self.targetClosed:
                 self.target.shutdown(socket.SHUT_RDWR)
@@ -551,9 +550,9 @@ class ConnectionHandler(threading.Thread):
     def run(self):
         try:
             self.client_buffer = self.client.recv(BUFLEN)
-        
+
             hostPort = self.findHeader(self.client_buffer, 'X-Real-Host')
-            
+
             if hostPort == '':
                 hostPort = DEFAULT_HOST
 
@@ -561,7 +560,7 @@ class ConnectionHandler(threading.Thread):
 
             if split != '':
                 self.client.recv(BUFLEN)
-            
+
             if hostPort != '':
                 passwd = self.findHeader(self.client_buffer, 'X-Pass')
 				
@@ -569,10 +568,10 @@ class ConnectionHandler(threading.Thread):
                     self.method_CONNECT(hostPort)
                 elif len(PASS) != 0 and passwd != PASS:
                     self.client.send('HTTP/1.1 400 WrongPass!\r\n\r\n')
-                if hostPort.startswith(IP):
+                elif hostPort.startswith('127.0.0.1') or hostPort.startswith('localhost'):
                     self.method_CONNECT(hostPort)
                 else:
-                   self.client.send('HTTP/1.1 403 Forbidden!\r\n\r\n')
+                    self.client.send('HTTP/1.1 403 Forbidden!\r\n\r\n')
             else:
                 print '- No X-Real-Host!'
                 self.client.send('HTTP/1.1 400 NoXRealHost!\r\n\r\n')
@@ -587,7 +586,7 @@ class ConnectionHandler(threading.Thread):
 
     def findHeader(self, head, header):
         aux = head.find(header + ': ')
-    
+
         if aux == -1:
             return ''
 
@@ -607,9 +606,12 @@ class ConnectionHandler(threading.Thread):
             host = host[:i]
         else:
             if self.method=='CONNECT':
-                port = 1194
+                port = 333
             else:
-                port = 22
+                port = 80
+                port = 8080
+                port = 8799
+                port = 3128
 
         (soc_family, soc_type, proto, _, address) = socket.getaddrinfo(host, port)[0]
 
@@ -618,13 +620,15 @@ class ConnectionHandler(threading.Thread):
         self.target.connect(address)
 
     def method_CONNECT(self, path):
-    	self.log += ' - CONNECT ' + path
+        self.log += ' - CONNECT ' + path
+
         self.connect_target(path)
         self.client.sendall(RESPONSE)
         self.client_buffer = ''
+
         self.server.printLog(self.log)
         self.doCONNECT()
-                    
+
     def doCONNECT(self):
         socs = [self.client, self.target]
         count = 0
@@ -659,39 +663,68 @@ class ConnectionHandler(threading.Thread):
                 break
 
 
+def print_usage():
+    print 'Usage: proxy.py -p <port>'
+    print '       proxy.py -b <bindAddr> -p <port>'
+    print '       proxy.py -b 0.0.0.0 -p 80'
 
-def main(host=IP, port=PORT):
-    print "\033[0;34mâ”"*8,"\033[1;32m PROXY SOCKS","\033[0;34mâ”"*8,"\n"
-    print "\033[1;33mIP:\033[1;32m " + IP
-    print "\033[1;33mPORTA:\033[1;32m " + str(PORT) + "\n"
-    print "\033[0;34mâ”"*10,"\033[1;32m StrongHold","\033[0;34mâ”\033[1;37m"*11,"\n"
-    server = Server(IP, PORT)
+def parse_args(argv):
+    global LISTENING_ADDR
+    global LISTENING_PORT
+
+    try:
+        opts, args = getopt.getopt(argv,"hb:p:",["bind=","port="])
+    except getopt.GetoptError:
+        print_usage()
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print_usage()
+            sys.exit()
+        elif opt in ("-b", "--bind"):
+            LISTENING_ADDR = arg
+        elif opt in ("-p", "--port"):
+            LISTENING_PORT = int(arg)
+
+
+def main(host=LISTENING_ADDR, port=LISTENING_PORT):
+
+    print "\n:-------PythonProxy-------:\n"
+    print "Listening addr: " + LISTENING_ADDR
+    print "Listening port: " + str(LISTENING_PORT) + "\n"
+    print ":-------------------------:\n"
+
+    server = Server(LISTENING_ADDR, LISTENING_PORT)
     server.start()
+
     while True:
         try:
             time.sleep(2)
         except KeyboardInterrupt:
-            print '\nClosing...'
+            print 'Stopping...'
             server.close()
             break
+
 if __name__ == '__main__':
+    parse_args(sys.argv[1:])
     main()
+
 socksopenvpn
 
 
 cat << \autostart > /root/auto
 #!/bin/bash
-if nc -z localhost 8080; then
+if nc -z localhost 80; then
     echo "SocksProxy running"
 else
     echo "Starting Port 8080"
-    screen -dmS proxy2 python /usr/local/sbin/proxy.py 8080
+    screen -dmS proxy2 python /usr/local/sbin/proxy.py 80
 fi
 
-if nc -z localhost 444; then
+if nc -z localhost 443; then
     echo "SocksProxy running"
 else
-    echo "Starting Port 444"
+    echo "Starting Port 443"
     service stunnel4 restart
 fi
 autostart
