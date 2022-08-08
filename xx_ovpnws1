@@ -8,9 +8,6 @@ apt install -y openvpn
 apt install -y screen stunnel4 dropbear gnutls-bin python
 apt install -y dos2unix nano unzip jq virt-what net-tools default-mysql-client
 apt install -y mlocate dh-make libaudit-dev build-essential fail2ban
-clear
-}&>/dev/null
-clear
 }
 
 install_squid(){
@@ -62,7 +59,6 @@ cd /etc || exit
 wget 'https://pastebin.com/raw/xtPc5t1k' -O /etc/socks.py
 dos2unix /etc/socks.py
 chmod +x /etc/socks.py
-} &>/dev/null
 }
 
 
@@ -327,7 +323,6 @@ chmod 755 /etc/openvpn/login/connect.sh
 chmod 755 /etc/openvpn/login/disconnect.sh
 chmod 755 /etc/openvpn/login/config.sh
 chmod 755 /etc/openvpn/login/auth_vpn
-}&>/dev/null
 }
 
 
