@@ -329,7 +329,7 @@ ip6tables-save > /etc/iptables/rules.v6
 
 
 apt-get install squid -y
-echo "http_port 8070
+echo "http_port 8080
 acl to_vpn dst `curl ipinfo.io/ip`
 http_access allow to_vpn 
 via off
@@ -609,7 +609,7 @@ class ConnectionHandler(threading.Thread):
                 port = 333
             else:
                 port = 80
-                port = 8080
+                port = 8070
                 port = 8799
                 port = 3128
 
