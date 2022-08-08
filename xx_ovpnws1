@@ -1,8 +1,6 @@
 timedatectl set-timezone Asia/Riyadh
 install_require () {
-clear
-echo 'Installing dependencies.'
-{
+
 apt update
 apt install -y curl wget cron python-minimal libpython-stdlib
 apt install -y iptables
@@ -16,9 +14,7 @@ clear
 }
 
 install_squid(){
-clear
-echo 'Installing proxy.'
-{
+
 sudo cp /etc/apt/sources.list /etc/apt/sources.list_backup
 echo "deb http://us.archive.ubuntu.com/ubuntu/ trusty main universe" | sudo tee --append /etc/apt/sources.list.d/trusty_sources.list > /dev/null
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5
@@ -72,10 +68,7 @@ chmod +x /etc/socks.py
 
 
 install_openvpn()
-{
-clear
-echo "Installing openvpn."
-{
+
 mkdir -p /etc/openvpn/easy-rsa/keys
 mkdir -p /etc/openvpn/login
 mkdir -p /etc/openvpn/server
@@ -471,9 +464,6 @@ exit 0' >> /etc/rc.local
 }
 
 start_service () {
-clear
-echo 'Starting..'
-{
 
 sudo crontab -l | { echo "* * * * * pgrep -x stunnel4 >/dev/null && echo 'GOOD' || $(/etc/init.d/stunnel4 restart)
 @daily root /sbin/shutdown -r now"; } | crontab -
