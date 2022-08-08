@@ -1,6 +1,8 @@
 timedatectl set-timezone Asia/Riyadh
 install_require () {
-
+clear
+echo 'Installing dependencies.'
+{
 apt update
 apt install -y curl wget cron python-minimal libpython-stdlib
 apt install -y iptables
@@ -8,10 +10,15 @@ apt install -y openvpn
 apt install -y screen stunnel4 dropbear gnutls-bin python
 apt install -y dos2unix nano unzip jq virt-what net-tools default-mysql-client
 apt install -y mlocate dh-make libaudit-dev build-essential fail2ban
+clear
+}&>/dev/null
+clear
 }
 
 install_squid(){
-
+clear
+echo 'Installing proxy.'
+{
 sudo cp /etc/apt/sources.list /etc/apt/sources.list_backup
 echo "deb http://us.archive.ubuntu.com/ubuntu/ trusty main universe" | sudo tee --append /etc/apt/sources.list.d/trusty_sources.list > /dev/null
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5
@@ -59,12 +66,16 @@ cd /etc || exit
 wget 'https://pastebin.com/raw/xtPc5t1k' -O /etc/socks.py
 dos2unix /etc/socks.py
 chmod +x /etc/socks.py
+} &>/dev/null
 }
 
 
 
 install_openvpn()
-
+{
+clear
+echo "Installing openvpn."
+{
 mkdir -p /etc/openvpn/easy-rsa/keys
 mkdir -p /etc/openvpn/login
 mkdir -p /etc/openvpn/server
@@ -323,6 +334,7 @@ chmod 755 /etc/openvpn/login/connect.sh
 chmod 755 /etc/openvpn/login/disconnect.sh
 chmod 755 /etc/openvpn/login/config.sh
 chmod 755 /etc/openvpn/login/auth_vpn
+}&>/dev/null
 }
 
 
@@ -459,6 +471,9 @@ exit 0' >> /etc/rc.local
 }
 
 start_service () {
+clear
+echo 'Starting..'
+{
 
 sudo crontab -l | { echo "* * * * * pgrep -x stunnel4 >/dev/null && echo 'GOOD' || $(/etc/init.d/stunnel4 restart)
 @daily root /sbin/shutdown -r now"; } | crontab -
